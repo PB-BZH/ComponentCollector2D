@@ -1,20 +1,19 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
+[RequireComponent(typeof(Canvas))]
+[DisallowMultipleComponent]
 public sealed class GameUI: MonoBehaviour {
-  [SerializeField]
-  private TMP_Text livesText;
-
-  [Header("Gestionnaire de partie")]
-  [SerializeField]
-  private GameManager gameManager;
-
   [Header("Interface principale")]
   [SerializeField]
   private TMP_Text scoreText;
 
   [SerializeField]
   private TMP_Text timerText;
+
+  [SerializeField]
+  private TMP_Text livesText;
 
   [Header("Écran de fin")]
   [SerializeField]
@@ -23,17 +22,26 @@ public sealed class GameUI: MonoBehaviour {
   [SerializeField]
   private TMP_Text endMessageText;
 
+  [SerializeField]
+  private Button endActionButton;
+
+  [SerializeField]
+  private TMP_Text endActionButtonText;
+
   [Header("Commandes tactiles")]
   [SerializeField]
   private GameObject joystickRoot;
 
+  private GameManager _gameManager;
+
   private void OnValidate() {
-    if (gameManager == null ||
-        scoreText == null ||
+    if (scoreText == null ||
         timerText == null ||
         livesText == null ||
         endPanel == null ||
-        endMessageText == null) {
+        endMessageText == null ||
+        endActionButton == null ||
+        endActionButtonText == null) {
       Debug.LogWarning(
           "GameUI : une ou plusieurs références obligatoires ne sont pas renseignées.",
           this);
@@ -41,6 +49,9 @@ public sealed class GameUI: MonoBehaviour {
   }
 
   private void Awake() {
+    _gameManager =
+        FindFirstObjectByType<GameManager>();
+
     if (!ValidateReferences()) {
       enabled = false;
       return;
@@ -54,32 +65,31 @@ public sealed class GameUI: MonoBehaviour {
   }
 
   private void OnEnable() {
-    if (gameManager == null) {
-      return;
+    if (_gameManager != null) {
+      _gameManager.ScoreChanged += OnScoreChanged;
+      _gameManager.TimerChanged += OnTimerChanged;
+      _gameManager.LivesChanged += OnLivesChanged;
+      _gameManager.GameFinished += OnGameFinished;
     }
 
-    gameManager.ScoreChanged += OnScoreChanged;
-    gameManager.TimerChanged += OnTimerChanged;
-    gameManager.GameFinished += OnGameFinished;
-    gameManager.LivesChanged += OnLivesChanged;
+    if (endActionButton != null) {
+      endActionButton.onClick.AddListener(
+          OnEndActionButtonClicked);
+    }
   }
 
   private void OnDisable() {
-    if (gameManager == null) {
-      return;
+    if (_gameManager != null) {
+      _gameManager.ScoreChanged -= OnScoreChanged;
+      _gameManager.TimerChanged -= OnTimerChanged;
+      _gameManager.LivesChanged -= OnLivesChanged;
+      _gameManager.GameFinished -= OnGameFinished;
     }
 
-    gameManager.ScoreChanged -= OnScoreChanged;
-    gameManager.TimerChanged -= OnTimerChanged;
-    gameManager.GameFinished -= OnGameFinished;
-    gameManager.LivesChanged -= OnLivesChanged;
-  }
-
-  private void OnLivesChanged(
-    int remainingLives,
-    int totalLives) {
-    livesText.text =
-        $"Vies : {remainingLives} / {totalLives}";
+    if (endActionButton != null) {
+      endActionButton.onClick.RemoveListener(
+          OnEndActionButtonClicked);
+    }
   }
 
   private void OnScoreChanged(
@@ -95,6 +105,13 @@ public sealed class GameUI: MonoBehaviour {
         $"Temps : {remainingSeconds}";
   }
 
+  private void OnLivesChanged(
+      int remainingLives,
+      int totalLives) {
+    livesText.text =
+        $"Vies : {remainingLives} / {totalLives}";
+  }
+
   private void OnGameFinished(GameResult result) {
     if (joystickRoot != null) {
       joystickRoot.SetActive(false);
@@ -104,33 +121,57 @@ public sealed class GameUI: MonoBehaviour {
       case GameResult.Victory:
         endMessageText.text =
             "Mission accomplie !";
+
+        endActionButtonText.text =
+            "Nouvelle partie";
         break;
 
       case GameResult.TimeExpired:
         endMessageText.text =
             "Temps écoulé !";
+
+        endActionButtonText.text =
+            "Rejouer";
         break;
 
       case GameResult.NoLives:
         endMessageText.text =
             "Plus de vies !";
+
+        endActionButtonText.text =
+            "Rejouer";
         break;
 
       default:
         endMessageText.text =
             "Partie terminée";
+
+        endActionButtonText.text =
+            "Rejouer";
         break;
     }
 
     endPanel.SetActive(true);
   }
 
-  public bool ValidateReferences() {
+  private void OnEndActionButtonClicked() {
+    if (_gameManager == null) {
+      Debug.LogError(
+          "Impossible d'exécuter l'action de fin : GameManager est absent.",
+          this);
+
+      return;
+    }
+
+    _gameManager.HandleEndAction();
+  }
+
+  private bool ValidateReferences() {
     bool isValid = true;
 
-    if (gameManager == null) {
+    if (_gameManager == null) {
       Debug.LogError(
-          "La référence GameManager n'est pas renseignée dans GameUI.",
+          "Aucun GameManager actif n'a été trouvé dans la scène.",
           this);
 
       isValid = false;
@@ -152,6 +193,14 @@ public sealed class GameUI: MonoBehaviour {
       isValid = false;
     }
 
+    if (livesText == null) {
+      Debug.LogError(
+          "La référence LivesText n'est pas renseignée dans GameUI.",
+          this);
+
+      isValid = false;
+    }
+
     if (endPanel == null) {
       Debug.LogError(
           "La référence EndPanel n'est pas renseignée dans GameUI.",
@@ -168,50 +217,51 @@ public sealed class GameUI: MonoBehaviour {
       isValid = false;
     }
 
-    if (livesText == null) {
+    if (endActionButton == null) {
       Debug.LogError(
-          "La référence LivesText n'est pas renseignée dans GameUI.",
+          "La référence EndActionButton n'est pas renseignée dans GameUI.",
           this);
 
       isValid = false;
     }
 
-    Canvas gameCanvas =
-        GetComponentInParent<Canvas>();
+    if (endActionButtonText == null) {
+      Debug.LogError(
+          "La référence EndActionButtonText n'est pas renseignée dans GameUI.",
+          this);
+
+      isValid = false;
+    }
+
+    Canvas gameCanvas = GetComponent<Canvas>();
 
     if (gameCanvas == null) {
       Debug.LogError(
-          "GameUI doit être attaché à un Canvas ou à l'un de ses enfants.",
+          "GameUI doit être attaché au Canvas.",
           this);
 
       isValid = false;
     }
 
-    if (endPanel != null) {
-      Canvas endPanelCanvas =
-          endPanel.GetComponentInParent<Canvas>();
+    if (endPanel != null &&
+        endPanel.GetComponentInParent<Canvas>() != gameCanvas) {
+      Debug.LogError(
+          "EndPanel n'appartient pas au Canvas de GameUI.",
+          endPanel);
 
-      if (endPanelCanvas == null) {
-        Debug.LogError(
-            "EndPanel doit être placé sous un Canvas.",
-            endPanel);
-
-        isValid = false;
-      }
-      else if (gameCanvas != null &&
-               endPanelCanvas != gameCanvas) {
-        Debug.LogError(
-            "EndPanel n'appartient pas au même Canvas que GameUI.",
-            endPanel);
-
-        isValid = false;
-      }
+      isValid = false;
     }
 
     if (joystickRoot == null) {
       Debug.LogWarning(
           "JoystickRoot n'est pas renseigné. Le jeu fonctionnera sans joystick tactile.",
           this);
+    }
+    else if (joystickRoot.GetComponentInParent<Canvas>() !=
+             gameCanvas) {
+      Debug.LogWarning(
+          "JoystickRoot n'appartient pas au Canvas de GameUI.",
+          joystickRoot);
     }
 
     return isValid;

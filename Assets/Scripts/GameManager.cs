@@ -5,10 +5,6 @@ using UnityEngine.SceneManagement;
 
 public sealed class GameManager: MonoBehaviour {
   [SerializeField]
-  [Min(1)]
-  private int startingLives = 3;
-
-  [SerializeField]
   [Min(0f)]
   private float invulnerabilityDuration = 1.5f;
 
@@ -29,8 +25,8 @@ public sealed class GameManager: MonoBehaviour {
 
   private int _collectedCount;
   private int _totalCollectibles;
-  private int _score;
-  private int _remainingLives;
+  private GameSession _gameSession;
+  private GameResult? _lastGameResult;
 
   private float _remainingTime;
   private int _lastPublishedSecond = -1;
@@ -42,11 +38,8 @@ public sealed class GameManager: MonoBehaviour {
     gameDuration =
         Mathf.Max(1f,gameDuration);
 
-    startingLives =
-        Mathf.Max(1,startingLives);
-
     invulnerabilityDuration =
-        Mathf.Max(0f,invulnerabilityDuration);
+         Mathf.Max(0f,invulnerabilityDuration);
 
     if (playerController == null) {
       Debug.LogWarning(
@@ -56,6 +49,8 @@ public sealed class GameManager: MonoBehaviour {
   }
 
   private void Awake() {
+    _gameSession = GameSession.Instance;
+
     _collectibles =
         FindObjectsByType<Collectible>(
             FindObjectsInactive.Exclude);
@@ -66,15 +61,19 @@ public sealed class GameManager: MonoBehaviour {
 
     _totalCollectibles = _collectibles.Length;
     _remainingTime = gameDuration;
-    _remainingLives = startingLives;
 
     if (!ValidateReferences()) {
       enabled = false;
       return;
     }
 
+    // Enregistre le score et les vies présents
+    // au début de ce niveau.
+    _gameSession.BeginLevel();
+
     foreach (Collectible collectible in _collectibles) {
-      collectible.Collected += OnCollectibleCollected;
+      collectible.Collected +=
+          OnCollectibleCollected;
     }
 
     foreach (MovingHazard hazard in _hazards) {
@@ -90,14 +89,16 @@ public sealed class GameManager: MonoBehaviour {
       return;
     }
 
-    _remainingLives--;
+    bool hasRemainingLives =
+        _gameSession.TryLoseLife();
+
     PublishLives();
 
     Debug.Log(
-        $"Danger touché. Vies restantes : {_remainingLives}",
+        $"Danger touché. Vies restantes : {_gameSession.RemainingLives}",
         hazard);
 
-    if (_remainingLives <= 0) {
+    if (!hasRemainingLives) {
       FinishGame(GameResult.NoLives);
       return;
     }
@@ -114,8 +115,8 @@ public sealed class GameManager: MonoBehaviour {
 
   private void PublishLives() {
     LivesChanged?.Invoke(
-        _remainingLives,
-        startingLives);
+        _gameSession.RemainingLives,
+        _gameSession.StartingLives);
   }
 
   private void Update() {
@@ -149,20 +150,36 @@ public sealed class GameManager: MonoBehaviour {
     }
 
     _collectedCount++;
-    _score += collectible.PointValue;
+    _gameSession.AddScore(
+        collectible.PointValue);
 
     PublishScore();
 
     if (_collectedCount >= _totalCollectibles) {
-      FinishGame(GameResult.Victory);
+      if (!TryLoadNextLevel()) {
+        FinishGame(GameResult.Victory);
+      }
     }
+  }
+
+  private bool TryLoadNextLevel() {
+    Scene currentScene = SceneManager.GetActiveScene();
+    int nextSceneBuildIndex = currentScene.buildIndex + 1;
+    bool nextSceneExists = nextSceneBuildIndex < SceneManager.sceneCountInBuildSettings;
+    if (!nextSceneExists) {
+      return false;
+    }
+    _gameFinished = true;
+    Debug.Log($"Chargement du niveau suivant, index {nextSceneBuildIndex}.");
+    SceneManager.LoadScene(nextSceneBuildIndex);
+    return true;
   }
 
   private void PublishScore() {
     ScoreChanged?.Invoke(
         _collectedCount,
         _totalCollectibles,
-        _score);
+        _gameSession.Score);
   }
 
   private void PublishTimer(bool force = false) {
@@ -185,6 +202,7 @@ public sealed class GameManager: MonoBehaviour {
     }
 
     _gameFinished = true;
+    _lastGameResult = result;
 
     if (playerController != null) {
       playerController.enabled = false;
@@ -194,16 +212,34 @@ public sealed class GameManager: MonoBehaviour {
 
     Debug.Log(
         result == GameResult.Victory
-            ? "Tous les composants ont été ramassés."
-            : "Temps écoulé.");
+            ? "Tous les niveaux sont terminés."
+            : result == GameResult.TimeExpired
+                ? "Temps écoulé."
+                : "Plus de vies.");
+  }
+
+  public void HandleEndAction() {
+    if (_lastGameResult == GameResult.Victory) {
+      StartNewGame();
+      return;
+    }
+
+    ReplayCurrentScene();
   }
 
   public void ReplayCurrentScene() {
+    _gameSession.RestoreLevelCheckpoint();
+
     Scene currentScene =
         SceneManager.GetActiveScene();
 
     SceneManager.LoadScene(
         currentScene.buildIndex);
+  }
+
+  public void StartNewGame() {
+    _gameSession.BeginNewGame();
+    SceneManager.LoadScene(0);
   }
 
   private bool ValidateReferences() {
@@ -212,6 +248,14 @@ public sealed class GameManager: MonoBehaviour {
     if (playerController == null) {
       Debug.LogError(
           "La référence PlayerController n'est pas renseignée.",
+          this);
+
+      isValid = false;
+    }
+
+    if (_gameSession == null) {
+      Debug.LogError(
+          "Aucune GameSession active n'a été trouvée.",
           this);
 
       isValid = false;
