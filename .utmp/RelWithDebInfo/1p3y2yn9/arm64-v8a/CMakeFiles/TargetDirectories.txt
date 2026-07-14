@@ -1,0 +1,5 @@
+E:/UnityProjects/ComponentCollector2D/.utmp/RelWithDebInfo/1p3y2yn9/arm64-v8a/CMakeFiles/edit_cache.dir
+E:/UnityProjects/ComponentCollector2D/.utmp/RelWithDebInfo/1p3y2yn9/arm64-v8a/CMakeFiles/rebuild_cache.dir
+E:/UnityProjects/ComponentCollector2D/.utmp/RelWithDebInfo/1p3y2yn9/arm64-v8a/GameActivity/CMakeFiles/game.dir
+E:/UnityProjects/ComponentCollector2D/.utmp/RelWithDebInfo/1p3y2yn9/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+E:/UnityProjects/ComponentCollector2D/.utmp/RelWithDebInfo/1p3y2yn9/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
