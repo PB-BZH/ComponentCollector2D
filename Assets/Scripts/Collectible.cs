@@ -13,15 +13,11 @@ public sealed class Collectible: MonoBehaviour {
   }
 
   private void OnTriggerEnter2D(Collider2D other) {
-    if (_isCollected ||
-        !other.TryGetComponent<PlayerController>(out _)) {
+    if (_isCollected || !other.TryGetComponent<PlayerController>(out _)) {
       return;
     }
-
     _isCollected = true;
-
     Collected?.Invoke(this);
-
     Destroy(gameObject);
   }
 }

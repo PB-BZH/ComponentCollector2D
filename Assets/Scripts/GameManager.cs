@@ -1,29 +1,9 @@
 using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public sealed class GameManager: MonoBehaviour {
-  private Collectible[] _collectibles = Array.Empty<Collectible>();
-
-  [Header("Interface principale")]
-  [SerializeField]
-  private TMP_Text scoreText;
-
-  [SerializeField]
-  private GameObject joystickRoot;
-
-  [SerializeField]
-  private TMP_Text timerText;
-
-  [Header("Écran de fin")]
-  [SerializeField]
-  private GameObject endPanel;
-
-  [SerializeField]
-  private TMP_Text endMessageText;
-
   [Header("Partie")]
   [SerializeField]
   [Min(1f)]
@@ -32,6 +12,13 @@ public sealed class GameManager: MonoBehaviour {
   [SerializeField]
   private PlayerController playerController;
 
+  [Header("Interface")]
+  [SerializeField]
+  private GameUI gameUI;
+
+  private Collectible[] _collectibles =
+      Array.Empty<Collectible>();
+
   private int _collectedCount;
   private int _totalCollectibles;
 
@@ -39,9 +26,9 @@ public sealed class GameManager: MonoBehaviour {
   private bool _gameFinished;
 
   private void Awake() {
-    // On conserve les références vers tous les objets à ramasser.
-    _collectibles = FindObjectsByType<Collectible>(
-        FindObjectsInactive.Exclude);
+    _collectibles =
+        FindObjectsByType<Collectible>(
+            FindObjectsInactive.Exclude);
 
     _totalCollectibles = _collectibles.Length;
     _remainingTime = gameDuration;
@@ -51,23 +38,13 @@ public sealed class GameManager: MonoBehaviour {
       return;
     }
 
-    // Le GameManager s'abonne à chaque événement de collecte.
     foreach (Collectible collectible in _collectibles) {
       collectible.Collected += OnCollectibleCollected;
     }
 
-    endPanel.SetActive(false);
-
-    if (joystickRoot != null) {
-      joystickRoot.SetActive(true);
-    }
-
-    RefreshScore();
-    RefreshTimer();
-  }
-
-  private void OnCollectibleCollected(Collectible collectible) {
-    RegisterCollectible();
+    gameUI.Initialize(
+        _totalCollectibles,
+        _remainingTime);
   }
 
   private void Update() {
@@ -75,96 +52,116 @@ public sealed class GameManager: MonoBehaviour {
       Application.Quit();
       return;
     }
+
     if (_gameFinished) {
       return;
     }
-    if (_gameFinished) {
-      return;
-    }
+
     _remainingTime -= Time.deltaTime;
+
     if (_remainingTime <= 0f) {
       _remainingTime = 0f;
-      RefreshTimer();
-      FinishGame("Temps écoulé !",isVictory: false);
+
+      gameUI.UpdateTimer(_remainingTime);
+
+      FinishGame(
+          "Temps écoulé !",
+          isVictory: false);
+
       return;
     }
-    RefreshTimer();
+
+    gameUI.UpdateTimer(_remainingTime);
   }
 
-  public void RegisterCollectible() {
+  private void OnCollectibleCollected(
+      Collectible collectible) {
+    RegisterCollectible();
+  }
+
+  private void RegisterCollectible() {
     if (_gameFinished) {
       return;
     }
+
     _collectedCount++;
-    RefreshScore();
+
+    gameUI.UpdateScore(
+        _collectedCount,
+        _totalCollectibles);
+
     if (_collectedCount >= _totalCollectibles) {
-      FinishGame("Mission accomplie !",isVictory: true);
+      FinishGame(
+          "Mission accomplie !",
+          isVictory: true);
     }
   }
 
   public void ReplayCurrentScene() {
-    Scene currentScene = SceneManager.GetActiveScene();
-    SceneManager.LoadScene(currentScene.buildIndex);
+    Scene currentScene =
+        SceneManager.GetActiveScene();
+
+    SceneManager.LoadScene(
+        currentScene.buildIndex);
   }
 
-  private void FinishGame(string message,bool isVictory) {
+  private void FinishGame(
+      string message,
+      bool isVictory) {
     if (_gameFinished) {
       return;
     }
+
     _gameFinished = true;
-    endMessageText.text = message;
-    endPanel.SetActive(true);
-    if (joystickRoot != null) {
-      joystickRoot.SetActive(false);
-    }
+
+    gameUI.ShowEndPanel(message);
+
     if (playerController != null) {
       playerController.enabled = false;
     }
-    Debug.Log(isVictory ? "Tous les composants ont été ramassés." : "Temps écoulé.");
-  }
 
-  private void RefreshScore() {
-    scoreText.text = $"Composants : {_collectedCount} / {_totalCollectibles}";
-  }
-
-  private void RefreshTimer() {
-    int displayedTime = Mathf.CeilToInt(_remainingTime);
-    timerText.text = $"Temps : {displayedTime}";
+    Debug.Log(
+        isVictory
+            ? "Tous les composants ont été ramassés."
+            : "Temps écoulé.");
   }
 
   private bool ValidateReferences() {
     bool isValid = true;
-    if (scoreText == null) {
-      Debug.LogError("La référence ScoreText n'est pas renseignée.",this);
-      isValid = false;
-    }
-    if (timerText == null) {
-      Debug.LogError("La référence TimerText n'est pas renseignée.",this);
-      isValid = false;
-    }
-    if (endPanel == null) {
-      Debug.LogError("La référence EndPanel n'est pas renseignée.",this);
-      isValid = false;
-    }
-    if (endMessageText == null) {
-      Debug.LogError("La référence EndMessageText n'est pas renseignée.",this);
-      isValid = false;
-    }
+
     if (playerController == null) {
-      Debug.LogError("La référence PlayerController n'est pas renseignée.",this);
+      Debug.LogError(
+          "La référence PlayerController n'est pas renseignée.",
+          this);
+
       isValid = false;
     }
 
-    if (joystickRoot == null) {
-      Debug.LogWarning("JoystickRoot n'est pas renseigné. Le jeu fonctionnera sans joystick tactile.",this);
+    if (gameUI == null) {
+      Debug.LogError(
+          "La référence GameUI n'est pas renseignée.",
+          this);
+
+      isValid = false;
     }
+    else if (!gameUI.ValidateReferences()) {
+      isValid = false;
+    }
+
+    if (_totalCollectibles == 0) {
+      Debug.LogWarning(
+          "Aucun Collectible actif n'a été trouvé dans la scène.",
+          this);
+    }
+
     return isValid;
   }
 
   private void OnDestroy() {
     foreach (Collectible collectible in _collectibles) {
       if (collectible != null) {
-        collectible.Collected -= OnCollectibleCollected;
+        collectible.Collected -=
+            OnCollectibleCollected;
       }
     }
   }
