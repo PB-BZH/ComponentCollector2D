@@ -4,6 +4,11 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public sealed class GameManager: MonoBehaviour {
+  [Header("Navigation")]
+  [SerializeField]
+  [Min(0)]
+  private int mainMenuBuildIndex = 0;
+
   [SerializeField]
   [Min(0f)]
   private float invulnerabilityDuration = 1.5f;
@@ -35,6 +40,9 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<int,int> LivesChanged;
 
   private void OnValidate() {
+    mainMenuBuildIndex =
+      Mathf.Max(0,mainMenuBuildIndex);
+
     gameDuration =
         Mathf.Max(1f,gameDuration);
 
@@ -220,11 +228,26 @@ public sealed class GameManager: MonoBehaviour {
 
   public void HandleEndAction() {
     if (_lastGameResult == GameResult.Victory) {
-      StartNewGame();
+      ReturnToMainMenu();
       return;
     }
 
     ReplayCurrentScene();
+  }
+
+  private void ReturnToMainMenu() {
+    if (mainMenuBuildIndex >=
+        SceneManager.sceneCountInBuildSettings) {
+      Debug.LogError(
+          $"L'index du menu ({mainMenuBuildIndex}) " +
+          "n'existe pas dans la Scene List.",
+          this);
+
+      return;
+    }
+
+    SceneManager.LoadScene(
+        mainMenuBuildIndex);
   }
 
   public void ReplayCurrentScene() {
@@ -235,11 +258,6 @@ public sealed class GameManager: MonoBehaviour {
 
     SceneManager.LoadScene(
         currentScene.buildIndex);
-  }
-
-  public void StartNewGame() {
-    _gameSession.BeginNewGame();
-    SceneManager.LoadScene(0);
   }
 
   private bool ValidateReferences() {

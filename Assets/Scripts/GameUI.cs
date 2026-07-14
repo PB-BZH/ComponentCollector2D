@@ -123,7 +123,7 @@ public sealed class GameUI: MonoBehaviour {
             "Mission accomplie !";
 
         endActionButtonText.text =
-            "Nouvelle partie";
+            "Menu principal";
         break;
 
       case GameResult.TimeExpired:
