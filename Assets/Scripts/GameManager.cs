@@ -4,6 +4,14 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public sealed class GameManager: MonoBehaviour {
+  [SerializeField]
+  [Min(1)]
+  private int startingLives = 3;
+
+  [SerializeField]
+  [Min(0f)]
+  private float invulnerabilityDuration = 1.5f;
+
   [Header("Partie")]
   [SerializeField]
   [Min(1f)]
@@ -16,20 +24,29 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<int> TimerChanged;
   public event Action<GameResult> GameFinished;
 
-  private Collectible[] _collectibles =
-      Array.Empty<Collectible>();
+  private Collectible[] _collectibles = Array.Empty<Collectible>();
+  private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
 
   private int _collectedCount;
   private int _totalCollectibles;
   private int _score;
+  private int _remainingLives;
 
   private float _remainingTime;
   private int _lastPublishedSecond = -1;
 
   private bool _gameFinished;
+  public event Action<int,int> LivesChanged;
 
   private void OnValidate() {
-    gameDuration = Mathf.Max(1f,gameDuration);
+    gameDuration =
+        Mathf.Max(1f,gameDuration);
+
+    startingLives =
+        Mathf.Max(1,startingLives);
+
+    invulnerabilityDuration =
+        Mathf.Max(0f,invulnerabilityDuration);
 
     if (playerController == null) {
       Debug.LogWarning(
@@ -43,8 +60,13 @@ public sealed class GameManager: MonoBehaviour {
         FindObjectsByType<Collectible>(
             FindObjectsInactive.Exclude);
 
+    _hazards =
+        FindObjectsByType<MovingHazard>(
+            FindObjectsInactive.Exclude);
+
     _totalCollectibles = _collectibles.Length;
     _remainingTime = gameDuration;
+    _remainingLives = startingLives;
 
     if (!ValidateReferences()) {
       enabled = false;
@@ -54,11 +76,46 @@ public sealed class GameManager: MonoBehaviour {
     foreach (Collectible collectible in _collectibles) {
       collectible.Collected += OnCollectibleCollected;
     }
+
+    foreach (MovingHazard hazard in _hazards) {
+      hazard.PlayerHit += OnPlayerHit;
+    }
+  }
+
+  private void OnPlayerHit(
+      MovingHazard hazard,
+      PlayerController hitPlayer) {
+    if (_gameFinished ||
+        hitPlayer.IsInvulnerable) {
+      return;
+    }
+
+    _remainingLives--;
+    PublishLives();
+
+    Debug.Log(
+        $"Danger touché. Vies restantes : {_remainingLives}",
+        hazard);
+
+    if (_remainingLives <= 0) {
+      FinishGame(GameResult.NoLives);
+      return;
+    }
+
+    hitPlayer.Respawn(
+        invulnerabilityDuration);
   }
 
   private void Start() {
     PublishScore();
     PublishTimer(force: true);
+    PublishLives();
+  }
+
+  private void PublishLives() {
+    LivesChanged?.Invoke(
+        _remainingLives,
+        startingLives);
   }
 
   private void Update() {
@@ -174,6 +231,12 @@ public sealed class GameManager: MonoBehaviour {
       if (collectible != null) {
         collectible.Collected -=
             OnCollectibleCollected;
+      }
+    }
+
+    foreach (MovingHazard hazard in _hazards) {
+      if (hazard != null) {
+        hazard.PlayerHit -= OnPlayerHit;
       }
     }
   }

@@ -2,6 +2,9 @@ using TMPro;
 using UnityEngine;
 
 public sealed class GameUI: MonoBehaviour {
+  [SerializeField]
+  private TMP_Text livesText;
+
   [Header("Gestionnaire de partie")]
   [SerializeField]
   private GameManager gameManager;
@@ -28,6 +31,7 @@ public sealed class GameUI: MonoBehaviour {
     if (gameManager == null ||
         scoreText == null ||
         timerText == null ||
+        livesText == null ||
         endPanel == null ||
         endMessageText == null) {
       Debug.LogWarning(
@@ -57,6 +61,7 @@ public sealed class GameUI: MonoBehaviour {
     gameManager.ScoreChanged += OnScoreChanged;
     gameManager.TimerChanged += OnTimerChanged;
     gameManager.GameFinished += OnGameFinished;
+    gameManager.LivesChanged += OnLivesChanged;
   }
 
   private void OnDisable() {
@@ -67,6 +72,14 @@ public sealed class GameUI: MonoBehaviour {
     gameManager.ScoreChanged -= OnScoreChanged;
     gameManager.TimerChanged -= OnTimerChanged;
     gameManager.GameFinished -= OnGameFinished;
+    gameManager.LivesChanged -= OnLivesChanged;
+  }
+
+  private void OnLivesChanged(
+    int remainingLives,
+    int totalLives) {
+    livesText.text =
+        $"Vies : {remainingLives} / {totalLives}";
   }
 
   private void OnScoreChanged(
@@ -96,6 +109,11 @@ public sealed class GameUI: MonoBehaviour {
       case GameResult.TimeExpired:
         endMessageText.text =
             "Temps écoulé !";
+        break;
+
+      case GameResult.NoLives:
+        endMessageText.text =
+            "Plus de vies !";
         break;
 
       default:
@@ -145,6 +163,14 @@ public sealed class GameUI: MonoBehaviour {
     if (endMessageText == null) {
       Debug.LogError(
           "La référence EndMessageText n'est pas renseignée dans GameUI.",
+          this);
+
+      isValid = false;
+    }
+
+    if (livesText == null) {
+      Debug.LogError(
+          "La référence LivesText n'est pas renseignée dans GameUI.",
           this);
 
       isValid = false;

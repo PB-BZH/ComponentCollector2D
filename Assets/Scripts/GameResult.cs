@@ -1,4 +1,5 @@
 public enum GameResult {
   Victory,
-  TimeExpired
+  TimeExpired,
+  NoLives
 }
