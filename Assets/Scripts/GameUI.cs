@@ -2,6 +2,10 @@ using TMPro;
 using UnityEngine;
 
 public sealed class GameUI: MonoBehaviour {
+  [Header("Gestionnaire de partie")]
+  [SerializeField]
+  private GameManager gameManager;
+
   [Header("Interface principale")]
   [SerializeField]
   private TMP_Text scoreText;
@@ -21,7 +25,8 @@ public sealed class GameUI: MonoBehaviour {
   private GameObject joystickRoot;
 
   private void OnValidate() {
-    if (scoreText == null ||
+    if (gameManager == null ||
+        scoreText == null ||
         timerText == null ||
         endPanel == null ||
         endMessageText == null) {
@@ -31,8 +36,87 @@ public sealed class GameUI: MonoBehaviour {
     }
   }
 
+  private void Awake() {
+    if (!ValidateReferences()) {
+      enabled = false;
+      return;
+    }
+
+    endPanel.SetActive(false);
+
+    if (joystickRoot != null) {
+      joystickRoot.SetActive(true);
+    }
+  }
+
+  private void OnEnable() {
+    if (gameManager == null) {
+      return;
+    }
+
+    gameManager.ScoreChanged += OnScoreChanged;
+    gameManager.TimerChanged += OnTimerChanged;
+    gameManager.GameFinished += OnGameFinished;
+  }
+
+  private void OnDisable() {
+    if (gameManager == null) {
+      return;
+    }
+
+    gameManager.ScoreChanged -= OnScoreChanged;
+    gameManager.TimerChanged -= OnTimerChanged;
+    gameManager.GameFinished -= OnGameFinished;
+  }
+
+  private void OnScoreChanged(
+      int collectedCount,
+      int totalCollectibles,
+      int score) {
+    scoreText.text =
+        $"Composants : {collectedCount} / {totalCollectibles}   Score : {score}";
+  }
+
+  private void OnTimerChanged(int remainingSeconds) {
+    timerText.text =
+        $"Temps : {remainingSeconds}";
+  }
+
+  private void OnGameFinished(GameResult result) {
+    if (joystickRoot != null) {
+      joystickRoot.SetActive(false);
+    }
+
+    switch (result) {
+      case GameResult.Victory:
+        endMessageText.text =
+            "Mission accomplie !";
+        break;
+
+      case GameResult.TimeExpired:
+        endMessageText.text =
+            "Temps écoulé !";
+        break;
+
+      default:
+        endMessageText.text =
+            "Partie terminée";
+        break;
+    }
+
+    endPanel.SetActive(true);
+  }
+
   public bool ValidateReferences() {
     bool isValid = true;
+
+    if (gameManager == null) {
+      Debug.LogError(
+          "La référence GameManager n'est pas renseignée dans GameUI.",
+          this);
+
+      isValid = false;
+    }
 
     if (scoreText == null) {
       Debug.LogError(
@@ -66,7 +150,8 @@ public sealed class GameUI: MonoBehaviour {
       isValid = false;
     }
 
-    Canvas gameCanvas = GetComponentInParent<Canvas>();
+    Canvas gameCanvas =
+        GetComponentInParent<Canvas>();
 
     if (gameCanvas == null) {
       Debug.LogError(
@@ -102,62 +187,7 @@ public sealed class GameUI: MonoBehaviour {
           "JoystickRoot n'est pas renseigné. Le jeu fonctionnera sans joystick tactile.",
           this);
     }
-    else {
-      Canvas joystickCanvas =
-          joystickRoot.GetComponentInParent<Canvas>();
-
-      if (joystickCanvas == null) {
-        Debug.LogWarning(
-            "JoystickRoot n'est placé sous aucun Canvas.",
-            joystickRoot);
-      }
-      else if (gameCanvas != null &&
-               joystickCanvas != gameCanvas) {
-        Debug.LogWarning(
-            "JoystickRoot n'appartient pas au même Canvas que GameUI.",
-            joystickRoot);
-      }
-    }
 
     return isValid;
-  }
-
-  public void Initialize(
-      int totalCollectibles,
-      float remainingTime) {
-    endPanel.SetActive(false);
-
-    if (joystickRoot != null) {
-      joystickRoot.SetActive(true);
-    }
-
-    UpdateScore(
-        collectedCount: 0,
-        totalCollectibles,
-        score: 0);
-
-    UpdateTimer(remainingTime);
-  }
-
-  public void UpdateScore(
-      int collectedCount,
-      int totalCollectibles,
-      int score) {
-    scoreText.text = $"Composants : {collectedCount} / {totalCollectibles}   Score : {score}";
-  }
-
-  public void UpdateTimer(float remainingTime) {
-    int displayedTime = Mathf.CeilToInt(remainingTime);
-
-    timerText.text = $"Temps : {displayedTime}";
-  }
-
-  public void ShowEndPanel(string message) {
-    if (joystickRoot != null) {
-      joystickRoot.SetActive(false);
-    }
-
-    endMessageText.text = message;
-    endPanel.SetActive(true);
   }
 }

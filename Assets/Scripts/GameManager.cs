@@ -12,23 +12,33 @@ public sealed class GameManager: MonoBehaviour {
   [SerializeField]
   private PlayerController playerController;
 
-  [Header("Interface")]
-  [SerializeField]
-  private GameUI gameUI;
+  public event Action<int,int,int> ScoreChanged;
+  public event Action<int> TimerChanged;
+  public event Action<GameResult> GameFinished;
 
   private Collectible[] _collectibles =
       Array.Empty<Collectible>();
 
   private int _collectedCount;
   private int _totalCollectibles;
-
-  private float _remainingTime;
-  private bool _gameFinished;
-
   private int _score;
 
+  private float _remainingTime;
+  private int _lastPublishedSecond = -1;
+
+  private bool _gameFinished;
+
+  private void OnValidate() {
+    gameDuration = Mathf.Max(1f,gameDuration);
+
+    if (playerController == null) {
+      Debug.LogWarning(
+          "GameManager : PlayerController n'est pas renseigné.",
+          this);
+    }
+  }
+
   private void Awake() {
-    Application.runInBackground = true;
     _collectibles =
         FindObjectsByType<Collectible>(
             FindObjectsInactive.Exclude);
@@ -44,20 +54,11 @@ public sealed class GameManager: MonoBehaviour {
     foreach (Collectible collectible in _collectibles) {
       collectible.Collected += OnCollectibleCollected;
     }
-
-    gameUI.Initialize(
-        _totalCollectibles,
-        _remainingTime);
   }
 
-  private void OnValidate() {
-    gameDuration = Mathf.Max(1f,gameDuration);
-
-    if (playerController == null || gameUI == null) {
-      Debug.LogWarning(
-          "GameManager : PlayerController ou GameUI n'est pas renseigné.",
-          this);
-    }
+  private void Start() {
+    PublishScore();
+    PublishTimer(force: true);
   }
 
   private void Update() {
@@ -75,41 +76,69 @@ public sealed class GameManager: MonoBehaviour {
     if (_remainingTime <= 0f) {
       _remainingTime = 0f;
 
-      gameUI.UpdateTimer(_remainingTime);
-
-      FinishGame(
-          "Temps écoulé !",
-          isVictory: false);
+      PublishTimer(force: true);
+      FinishGame(GameResult.TimeExpired);
 
       return;
     }
 
-    gameUI.UpdateTimer(_remainingTime);
+    PublishTimer();
   }
 
   private void OnCollectibleCollected(
       Collectible collectible) {
-    RegisterCollectible(collectible.PointValue);
-  }
-
-  private void RegisterCollectible(int pointValue) {
     if (_gameFinished) {
       return;
     }
 
     _collectedCount++;
-    _score += pointValue;
+    _score += collectible.PointValue;
 
-    gameUI.UpdateScore(
+    PublishScore();
+
+    if (_collectedCount >= _totalCollectibles) {
+      FinishGame(GameResult.Victory);
+    }
+  }
+
+  private void PublishScore() {
+    ScoreChanged?.Invoke(
         _collectedCount,
         _totalCollectibles,
         _score);
+  }
 
-    if (_collectedCount >= _totalCollectibles) {
-      FinishGame(
-          "Mission accomplie !",
-          isVictory: true);
+  private void PublishTimer(bool force = false) {
+    int displayedSecond =
+        Mathf.CeilToInt(_remainingTime);
+
+    if (!force &&
+        displayedSecond == _lastPublishedSecond) {
+      return;
     }
+
+    _lastPublishedSecond = displayedSecond;
+
+    TimerChanged?.Invoke(displayedSecond);
+  }
+
+  private void FinishGame(GameResult result) {
+    if (_gameFinished) {
+      return;
+    }
+
+    _gameFinished = true;
+
+    if (playerController != null) {
+      playerController.enabled = false;
+    }
+
+    GameFinished?.Invoke(result);
+
+    Debug.Log(
+        result == GameResult.Victory
+            ? "Tous les composants ont été ramassés."
+            : "Temps écoulé.");
   }
 
   public void ReplayCurrentScene() {
@@ -120,27 +149,6 @@ public sealed class GameManager: MonoBehaviour {
         currentScene.buildIndex);
   }
 
-  private void FinishGame(
-      string message,
-      bool isVictory) {
-    if (_gameFinished) {
-      return;
-    }
-
-    _gameFinished = true;
-
-    gameUI.ShowEndPanel(message);
-
-    if (playerController != null) {
-      playerController.enabled = false;
-    }
-
-    Debug.Log(
-        isVictory
-            ? "Tous les composants ont été ramassés."
-            : "Temps écoulé.");
-  }
-
   private bool ValidateReferences() {
     bool isValid = true;
 
@@ -149,17 +157,6 @@ public sealed class GameManager: MonoBehaviour {
           "La référence PlayerController n'est pas renseignée.",
           this);
 
-      isValid = false;
-    }
-
-    if (gameUI == null) {
-      Debug.LogError(
-          "La référence GameUI n'est pas renseignée.",
-          this);
-
-      isValid = false;
-    }
-    else if (!gameUI.ValidateReferences()) {
       isValid = false;
     }
 
