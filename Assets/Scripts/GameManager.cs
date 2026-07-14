@@ -26,6 +26,7 @@ public sealed class GameManager: MonoBehaviour {
   private bool _gameFinished;
 
   private void Awake() {
+    Application.runInBackground = true;
     _collectibles =
         FindObjectsByType<Collectible>(
             FindObjectsInactive.Exclude);
