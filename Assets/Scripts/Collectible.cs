@@ -1,19 +1,11 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 public sealed class Collectible: MonoBehaviour {
-  private GameManager _gameManager;
+  public event Action<Collectible> Collected;
+
   private bool _isCollected;
-
-  private void Awake() {
-    _gameManager = FindAnyObjectByType<GameManager>();
-
-    if (_gameManager == null) {
-      Debug.LogError(
-          "Aucun GameManager actif n'a été trouvé dans la scène.",
-          this);
-    }
-  }
 
   private void Reset() {
     Collider2D collectibleCollider = GetComponent<Collider2D>();
@@ -28,9 +20,7 @@ public sealed class Collectible: MonoBehaviour {
 
     _isCollected = true;
 
-    if (_gameManager != null) {
-      _gameManager.RegisterCollectible();
-    }
+    Collected?.Invoke(this);
 
     Destroy(gameObject);
   }
