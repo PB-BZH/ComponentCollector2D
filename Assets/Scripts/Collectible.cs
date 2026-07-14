@@ -5,10 +5,17 @@ using UnityEngine;
 public sealed class Collectible: MonoBehaviour {
   public event Action<Collectible> Collected;
 
+  [Header("Valeur")]
+  [SerializeField]
+  [Min(1)]
+  private int pointValue = 1;
+
   [Header("Animation")]
   [SerializeField]
   [Min(0f)]
   private float rotationSpeed = 90f;
+
+  public int PointValue => pointValue;
 
   private bool _isCollected;
 
