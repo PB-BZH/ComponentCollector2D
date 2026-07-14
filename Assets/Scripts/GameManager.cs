@@ -25,6 +25,8 @@ public sealed class GameManager: MonoBehaviour {
   private float _remainingTime;
   private bool _gameFinished;
 
+  private int _score;
+
   private void Awake() {
     Application.runInBackground = true;
     _collectibles =
@@ -87,19 +89,21 @@ public sealed class GameManager: MonoBehaviour {
 
   private void OnCollectibleCollected(
       Collectible collectible) {
-    RegisterCollectible();
+    RegisterCollectible(collectible.PointValue);
   }
 
-  private void RegisterCollectible() {
+  private void RegisterCollectible(int pointValue) {
     if (_gameFinished) {
       return;
     }
 
     _collectedCount++;
+    _score += pointValue;
 
     gameUI.UpdateScore(
         _collectedCount,
-        _totalCollectibles);
+        _totalCollectibles,
+        _score);
 
     if (_collectedCount >= _totalCollectibles) {
       FinishGame(

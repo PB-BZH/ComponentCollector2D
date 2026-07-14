@@ -133,16 +133,17 @@ public sealed class GameUI: MonoBehaviour {
 
     UpdateScore(
         collectedCount: 0,
-        totalCollectibles);
+        totalCollectibles,
+        score: 0);
 
     UpdateTimer(remainingTime);
   }
 
   public void UpdateScore(
       int collectedCount,
-      int totalCollectibles) {
-    scoreText.text =
-        $"Composants : {collectedCount} / {totalCollectibles}";
+      int totalCollectibles,
+      int score) {
+    scoreText.text = $"Composants : {collectedCount} / {totalCollectibles}   Score : {score}";
   }
 
   public void UpdateTimer(float remainingTime) {
