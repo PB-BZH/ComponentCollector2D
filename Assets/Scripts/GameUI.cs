@@ -20,6 +20,17 @@ public sealed class GameUI: MonoBehaviour {
   [SerializeField]
   private GameObject joystickRoot;
 
+  private void OnValidate() {
+    if (scoreText == null ||
+        timerText == null ||
+        endPanel == null ||
+        endMessageText == null) {
+      Debug.LogWarning(
+          "GameUI : une ou plusieurs références obligatoires ne sont pas renseignées.",
+          this);
+    }
+  }
+
   public bool ValidateReferences() {
     bool isValid = true;
 
@@ -55,10 +66,57 @@ public sealed class GameUI: MonoBehaviour {
       isValid = false;
     }
 
+    Canvas gameCanvas = GetComponentInParent<Canvas>();
+
+    if (gameCanvas == null) {
+      Debug.LogError(
+          "GameUI doit être attaché à un Canvas ou à l'un de ses enfants.",
+          this);
+
+      isValid = false;
+    }
+
+    if (endPanel != null) {
+      Canvas endPanelCanvas =
+          endPanel.GetComponentInParent<Canvas>();
+
+      if (endPanelCanvas == null) {
+        Debug.LogError(
+            "EndPanel doit être placé sous un Canvas.",
+            endPanel);
+
+        isValid = false;
+      }
+      else if (gameCanvas != null &&
+               endPanelCanvas != gameCanvas) {
+        Debug.LogError(
+            "EndPanel n'appartient pas au même Canvas que GameUI.",
+            endPanel);
+
+        isValid = false;
+      }
+    }
+
     if (joystickRoot == null) {
       Debug.LogWarning(
           "JoystickRoot n'est pas renseigné. Le jeu fonctionnera sans joystick tactile.",
           this);
+    }
+    else {
+      Canvas joystickCanvas =
+          joystickRoot.GetComponentInParent<Canvas>();
+
+      if (joystickCanvas == null) {
+        Debug.LogWarning(
+            "JoystickRoot n'est placé sous aucun Canvas.",
+            joystickRoot);
+      }
+      else if (gameCanvas != null &&
+               joystickCanvas != gameCanvas) {
+        Debug.LogWarning(
+            "JoystickRoot n'appartient pas au même Canvas que GameUI.",
+            joystickRoot);
+      }
     }
 
     return isValid;

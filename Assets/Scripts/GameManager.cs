@@ -48,6 +48,16 @@ public sealed class GameManager: MonoBehaviour {
         _remainingTime);
   }
 
+  private void OnValidate() {
+    gameDuration = Mathf.Max(1f,gameDuration);
+
+    if (playerController == null || gameUI == null) {
+      Debug.LogWarning(
+          "GameManager : PlayerController ou GameUI n'est pas renseigné.",
+          this);
+    }
+  }
+
   private void Update() {
     if (Keyboard.current?.escapeKey.wasPressedThisFrame == true) {
       Application.Quit();
