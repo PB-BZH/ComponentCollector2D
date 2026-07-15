@@ -1685,7 +1685,7 @@ MonoBehaviour:
   levelNumber: 3
   mainMenuBuildIndex: 0
   invulnerabilityDuration: 1.5
-  gameDuration: 45
+  gameDuration: 30
   playerController: {fileID: 1715442372}
 --- !u!114 &1715442372 stripped
 MonoBehaviour:
@@ -2025,7 +2025,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5373501630474585126, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
       propertyPath: speed
-      value: 2
+      value: 3.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
