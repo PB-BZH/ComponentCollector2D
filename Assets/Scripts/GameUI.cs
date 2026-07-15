@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,10 @@ public sealed class GameUI: MonoBehaviour {
 
   [SerializeField]
   private Color timerWarningColor = Color.red;
+
+  [SerializeField]
+  [Min(0.1f)]
+  private float timerBlinkInterval = 0.4f;
 
   [Header("Pause")]
   [SerializeField]
@@ -67,6 +72,7 @@ public sealed class GameUI: MonoBehaviour {
   private GameObject joystickRoot;
 
   private GameManager _gameManager;
+  private Coroutine _timerBlinkCoroutine;
 
   private void OnValidate() {
     if (scoreText == null ||
@@ -134,6 +140,7 @@ public sealed class GameUI: MonoBehaviour {
       resumeButton.onClick.RemoveListener(OnResumeButtonClicked);
       restartLevelButton.onClick.RemoveListener(OnRestartLevelButtonClicked);
       mainMenuButton.onClick.RemoveListener(OnMainMenuButtonClicked);
+      StopTimerBlinking();
     }
 
     if (endActionButton != null) {
@@ -174,10 +181,30 @@ public sealed class GameUI: MonoBehaviour {
   private void OnTimerChanged(int remainingSeconds) {
     timerText.text = $"Temps : {remainingSeconds}";
 
+    bool isWarning =
+        remainingSeconds <= timerWarningThreshold;
+
     timerText.color =
-        remainingSeconds <= timerWarningThreshold
+        isWarning
             ? timerWarningColor
             : timerNormalColor;
+
+    if (isWarning && _timerBlinkCoroutine == null) {
+      _timerBlinkCoroutine =
+          StartCoroutine(BlinkTimer());
+    }
+    else if (!isWarning) {
+      StopTimerBlinking();
+    }
+  }
+
+  private void StopTimerBlinking() {
+    if (_timerBlinkCoroutine != null) {
+      StopCoroutine(_timerBlinkCoroutine);
+      _timerBlinkCoroutine = null;
+    }
+
+    timerText.enabled = true;
   }
 
   private void OnLivesChanged(
@@ -330,5 +357,12 @@ public sealed class GameUI: MonoBehaviour {
       Debug.LogWarning("JoystickRoot n'appartient pas au Canvas de GameUI.",joystickRoot);
     }
     return isValid;
+  }
+
+  private IEnumerator BlinkTimer() {
+    while (true) {
+      timerText.enabled = !timerText.enabled;
+      yield return new WaitForSecondsRealtime(timerBlinkInterval);
+    }
   }
 }
