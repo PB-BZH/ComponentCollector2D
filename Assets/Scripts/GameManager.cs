@@ -25,6 +25,8 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<int> TimerChanged;
   public event Action<GameResult> GameFinished;
   public event Action<bool> PauseChanged;
+  public event Action<int> PointsGained;
+  public event Action LifeLost;
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
@@ -87,6 +89,7 @@ public sealed class GameManager: MonoBehaviour {
 
     bool hasRemainingLives = _gameSession.TryLoseLife();
     PublishLives();
+    LifeLost?.Invoke();
     Debug.Log($"Danger touché. Vies restantes : {_gameSession.RemainingLives}",hazard);
 
     if (!hasRemainingLives) {
@@ -164,7 +167,13 @@ public sealed class GameManager: MonoBehaviour {
     }
 
     _collectedCount++;
-    _gameSession.AddScore(collectible.PointValue);
+
+    _gameSession.AddScore(
+        collectible.PointValue);
+
+    PointsGained?.Invoke(
+        collectible.PointValue);
+
     PublishScore();
 
     if (_collectedCount >= _totalCollectibles) {
