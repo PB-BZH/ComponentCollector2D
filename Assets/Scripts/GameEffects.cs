@@ -2,33 +2,52 @@
 
 [DisallowMultipleComponent]
 public sealed class GameEffects: MonoBehaviour {
-  [Header("Gestionnaire")]
-  [SerializeField]
-  private GameManager gameManager;
-
   [Header("Particules")]
   [SerializeField]
   private ParticleSystem collectEffectPrefab;
 
+  private GameManager _gameManager;
+
   private void OnValidate() {
-    if (gameManager == null ||
-        collectEffectPrefab == null) {
+    if (collectEffectPrefab == null) {
       Debug.LogWarning(
-          "GameEffects : GameManager ou prefab de particules non renseigné.",
+          "GameEffects : le prefab de particules de collecte n'est pas renseigné.",
           this);
     }
   }
 
+  private void Awake() {
+    _gameManager =
+        FindFirstObjectByType<GameManager>();
+
+    if (_gameManager == null) {
+      Debug.LogError(
+          "GameEffects : aucun GameManager actif n'a été trouvé dans la scène.",
+          this);
+
+      enabled = false;
+      return;
+    }
+
+    if (collectEffectPrefab == null) {
+      Debug.LogError(
+          "GameEffects : le prefab de particules de collecte est absent.",
+          this);
+
+      enabled = false;
+    }
+  }
+
   private void OnEnable() {
-    if (gameManager != null) {
-      gameManager.CollectibleCollected +=
+    if (_gameManager != null) {
+      _gameManager.CollectibleCollected +=
           OnCollectibleCollected;
     }
   }
 
   private void OnDisable() {
-    if (gameManager != null) {
-      gameManager.CollectibleCollected -=
+    if (_gameManager != null) {
+      _gameManager.CollectibleCollected -=
           OnCollectibleCollected;
     }
   }
@@ -45,7 +64,6 @@ public sealed class GameEffects: MonoBehaviour {
         position,
         Quaternion.identity);
 
-    // Le collectible rare produit un effet légèrement plus grand.
     if (pointValue > 1) {
       effect.transform.localScale =
           Vector3.one * 1.5f;
