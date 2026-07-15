@@ -5,6 +5,18 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Canvas))]
 [DisallowMultipleComponent]
 public sealed class GameUI: MonoBehaviour {
+  [Header("Avertissement du chronomètre")]
+
+  [SerializeField]
+  [Min(0)]
+  private int timerWarningThreshold = 10;
+
+  [SerializeField]
+  private Color timerNormalColor = Color.white;
+
+  [SerializeField]
+  private Color timerWarningColor = Color.red;
+
   [Header("Pause")]
   [SerializeField]
   private GameObject pausePanel;
@@ -70,9 +82,7 @@ public sealed class GameUI: MonoBehaviour {
         restartLevelButton == null ||
         mainMenuButton == null
      ) {
-      Debug.LogWarning(
-          "GameUI : une ou plusieurs références obligatoires ne sont pas renseignées.",
-          this);
+      Debug.LogWarning("GameUI : une ou plusieurs références obligatoires ne sont pas renseignées.",this);
     }
   }
 
@@ -162,8 +172,12 @@ public sealed class GameUI: MonoBehaviour {
   }
 
   private void OnTimerChanged(int remainingSeconds) {
-    timerText.text =
-        $"Temps : {remainingSeconds}";
+    timerText.text = $"Temps : {remainingSeconds}";
+
+    timerText.color =
+        remainingSeconds <= timerWarningThreshold
+            ? timerWarningColor
+            : timerNormalColor;
   }
 
   private void OnLivesChanged(
