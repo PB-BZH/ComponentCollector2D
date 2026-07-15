@@ -28,6 +28,7 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<int> PointsGained;
   public event Action LifeLost;
   public event Action<Vector3,int> CollectibleCollected;
+  public event Action<Vector3> PlayerDamaged;
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
@@ -91,6 +92,7 @@ public sealed class GameManager: MonoBehaviour {
     bool hasRemainingLives = _gameSession.TryLoseLife();
     PublishLives();
     LifeLost?.Invoke();
+    PlayerDamaged?.Invoke(hitPlayer.transform.position);
     Debug.Log($"Danger touché. Vies restantes : {_gameSession.RemainingLives}",hazard);
 
     if (!hasRemainingLives) {
@@ -161,23 +163,16 @@ public sealed class GameManager: MonoBehaviour {
     PauseChanged?.Invoke(_isPaused);
   }
 
-  private void OnCollectibleCollected(
-      Collectible collectible) {
+  private void OnCollectibleCollected(Collectible collectible) {
     if (_gameFinished) {
       return;
     }
 
     _collectedCount++;
 
-    _gameSession.AddScore(
-        collectible.PointValue);
-
-    PointsGained?.Invoke(
-        collectible.PointValue);
-
-    CollectibleCollected?.Invoke(
-        collectible.transform.position,
-        collectible.PointValue);
+    _gameSession.AddScore(collectible.PointValue);
+    PointsGained?.Invoke(collectible.PointValue);
+    CollectibleCollected?.Invoke(collectible.transform.position,collectible.PointValue);
 
     PublishScore();
 
@@ -271,11 +266,8 @@ public sealed class GameManager: MonoBehaviour {
 
     _gameSession.RestoreLevelCheckpoint();
 
-    Scene currentScene =
-        SceneManager.GetActiveScene();
-
-    SceneManager.LoadScene(
-        currentScene.buildIndex);
+    Scene currentScene = SceneManager.GetActiveScene();
+    SceneManager.LoadScene(currentScene.buildIndex);
   }
 
   private bool ValidateReferences() {

@@ -77,33 +77,23 @@ public sealed class GameAudio: MonoBehaviour {
     DetachFromGameManager();
 
     _gameManager =
-        FindFirstObjectByType<GameManager>();
+        FindAnyObjectByType<GameManager>();
 
     // Il est normal de ne pas en trouver dans MainMenu.
     if (_gameManager == null) {
       return;
     }
 
-    _gameManager.PointsGained +=
-        OnPointsGained;
-
-    _gameManager.LifeLost +=
-        OnLifeLost;
-
-    _gameManager.GameFinished +=
-        OnGameFinished;
+    _gameManager.PointsGained += OnPointsGained;
+    _gameManager.LifeLost += OnLifeLost;
+    _gameManager.GameFinished += OnGameFinished;
   }
 
   private void DetachFromGameManager() {
     if (_gameManager != null) {
-      _gameManager.PointsGained -=
-          OnPointsGained;
-
-      _gameManager.LifeLost -=
-          OnLifeLost;
-
-      _gameManager.GameFinished -=
-          OnGameFinished;
+      _gameManager.PointsGained -= OnPointsGained;
+      _gameManager.LifeLost -= OnLifeLost;
+      _gameManager.GameFinished -= OnGameFinished;
     }
 
     _gameManager = null;
@@ -113,15 +103,10 @@ public sealed class GameAudio: MonoBehaviour {
     if (collectClip == null) {
       return;
     }
-
     // Le rare possède une tonalité légèrement plus haute.
-    _audioSource.pitch =
-        pointValue > 1 ? 1.2f : 1f;
+    _audioSource.pitch = pointValue > 1 ? 1.2f : 1f;
 
-    _audioSource.PlayOneShot(
-        collectClip,
-        collectVolume);
-
+    _audioSource.PlayOneShot(collectClip,collectVolume);
     _audioSource.pitch = 1f;
   }
 

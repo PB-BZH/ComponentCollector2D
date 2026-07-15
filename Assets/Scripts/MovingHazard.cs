@@ -46,8 +46,7 @@ public sealed class MovingHazard: MonoBehaviour {
   }
 
   private void OnTriggerEnter2D(Collider2D other) {
-    if (!other.TryGetComponent<PlayerController>(
-            out PlayerController playerController)) {
+    if (!other.TryGetComponent<PlayerController>(out PlayerController playerController)) {
       return;
     }
 

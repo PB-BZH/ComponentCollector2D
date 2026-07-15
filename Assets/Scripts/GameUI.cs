@@ -71,7 +71,7 @@ public sealed class GameUI: MonoBehaviour {
   }
 
   private void Awake() {
-    _gameManager = FindFirstObjectByType<GameManager>();
+    _gameManager = FindAnyObjectByType<GameManager>();
 
     if (!ValidateReferences()) {
       enabled = false;

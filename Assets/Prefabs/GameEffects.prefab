@@ -45,3 +45,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameEffects
   collectEffectPrefab: {fileID: 7236667284282631618, guid: 1f791add0e16e1e40a587f6e85425b4d, type: 3}
+  damageEffectPrefab: {fileID: 9071670765798544307, guid: 777724ee2ea3b0c4db0bff1722bc34a0, type: 3}

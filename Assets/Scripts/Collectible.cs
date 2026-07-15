@@ -20,7 +20,10 @@ public sealed class Collectible: MonoBehaviour {
   private bool _isCollected;
 
   private void Update() {
-    transform.Rotate(xAngle: 0f,yAngle: 0f,zAngle: rotationSpeed * Time.deltaTime);
+    transform.Rotate(
+      xAngle: 0f,
+      yAngle: 0f,
+      zAngle: rotationSpeed * Time.deltaTime);
   }
 
   private void Reset() {
@@ -32,11 +35,8 @@ public sealed class Collectible: MonoBehaviour {
     if (_isCollected || !other.TryGetComponent<PlayerController>(out _)) {
       return;
     }
-
     _isCollected = true;
-
     Collected?.Invoke(this);
-
     Destroy(gameObject);
   }
 }
