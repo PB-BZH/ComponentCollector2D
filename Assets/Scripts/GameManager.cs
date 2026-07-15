@@ -27,6 +27,7 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<bool> PauseChanged;
   public event Action<int> PointsGained;
   public event Action LifeLost;
+  public event Action<Vector3,int> CollectibleCollected;
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
@@ -172,6 +173,10 @@ public sealed class GameManager: MonoBehaviour {
         collectible.PointValue);
 
     PointsGained?.Invoke(
+        collectible.PointValue);
+
+    CollectibleCollected?.Invoke(
+        collectible.transform.position,
         collectible.PointValue);
 
     PublishScore();
