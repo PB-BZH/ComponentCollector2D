@@ -27,31 +27,20 @@ public sealed class MovingHazard: MonoBehaviour {
     _startPosition = _rigidbody.position;
     _endPosition = _startPosition + travelOffset;
 
-    _pathLength = Vector2.Distance(
-        _startPosition,
-        _endPosition);
+    _pathLength = Vector2.Distance(_startPosition,_endPosition);
   }
 
   private void FixedUpdate() {
-    if (_pathLength <= Mathf.Epsilon ||
-        speed <= 0f) {
+    if (_pathLength <= Mathf.Epsilon || speed <= 0f) {
       return;
     }
 
-    _travelledDistance +=
-        speed * Time.fixedDeltaTime;
+    _travelledDistance += speed * Time.fixedDeltaTime;
 
-    float distanceOnPath = Mathf.PingPong(
-        _travelledDistance,
-        _pathLength);
+    float distanceOnPath = Mathf.PingPong(_travelledDistance,_pathLength);
+    float progress = distanceOnPath / _pathLength;
 
-    float progress =
-        distanceOnPath / _pathLength;
-
-    Vector2 targetPosition = Vector2.Lerp(
-        _startPosition,
-        _endPosition,
-        progress);
+    Vector2 targetPosition = Vector2.Lerp(_startPosition,_endPosition,progress);
 
     _rigidbody.MovePosition(targetPosition);
   }
@@ -66,24 +55,14 @@ public sealed class MovingHazard: MonoBehaviour {
   }
 
   private void OnDrawGizmosSelected() {
-    Vector3 startPosition =
-        Application.isPlaying
-            ? (Vector3)_startPosition
-            : transform.position;
+    Vector3 startPosition = Application.isPlaying
+      ? (Vector3)_startPosition
+      : transform.position;
 
-    Vector3 endPosition =
-        startPosition + (Vector3)travelOffset;
+    Vector3 endPosition = startPosition + (Vector3)travelOffset;
 
-    Gizmos.DrawLine(
-        startPosition,
-        endPosition);
-
-    Gizmos.DrawWireSphere(
-        startPosition,
-        0.15f);
-
-    Gizmos.DrawWireSphere(
-        endPosition,
-        0.15f);
+    Gizmos.DrawLine(startPosition,endPosition);
+    Gizmos.DrawWireSphere(startPosition,0.15f);
+    Gizmos.DrawWireSphere(endPosition,0.15f);
   }
 }

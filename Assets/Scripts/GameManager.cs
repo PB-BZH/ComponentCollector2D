@@ -24,6 +24,7 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<int,int,int> ScoreChanged;
   public event Action<int> TimerChanged;
   public event Action<GameResult> GameFinished;
+  public event Action<bool> PauseChanged;
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
@@ -32,6 +33,9 @@ public sealed class GameManager: MonoBehaviour {
   private int _totalCollectibles;
   private GameSession _gameSession;
   private GameResult? _lastGameResult;
+  private bool _isPaused;
+
+  public bool IsPaused => _isPaused;
 
   private float _remainingTime;
   private int _lastPublishedSecond = -1;
@@ -40,33 +44,21 @@ public sealed class GameManager: MonoBehaviour {
   public event Action<int,int> LivesChanged;
 
   private void OnValidate() {
-    mainMenuBuildIndex =
-      Mathf.Max(0,mainMenuBuildIndex);
-
-    gameDuration =
-        Mathf.Max(1f,gameDuration);
-
-    invulnerabilityDuration =
-         Mathf.Max(0f,invulnerabilityDuration);
+    mainMenuBuildIndex = Mathf.Max(0,mainMenuBuildIndex);
+    gameDuration = Mathf.Max(1f,gameDuration);
+    invulnerabilityDuration = Mathf.Max(0f,invulnerabilityDuration);
 
     if (playerController == null) {
-      Debug.LogWarning(
-          "GameManager : PlayerController n'est pas renseigné.",
-          this);
+      Debug.LogWarning("GameManager : PlayerController n'est pas renseigné.",this);
     }
   }
 
   private void Awake() {
+    Time.timeScale = 1f;
+    _isPaused = false;
     _gameSession = GameSession.Instance;
-
-    _collectibles =
-        FindObjectsByType<Collectible>(
-            FindObjectsInactive.Exclude);
-
-    _hazards =
-        FindObjectsByType<MovingHazard>(
-            FindObjectsInactive.Exclude);
-
+    _collectibles = FindObjectsByType<Collectible>(FindObjectsInactive.Exclude);
+    _hazards = FindObjectsByType<MovingHazard>(FindObjectsInactive.Exclude);
     _totalCollectibles = _collectibles.Length;
     _remainingTime = gameDuration;
 
@@ -80,8 +72,7 @@ public sealed class GameManager: MonoBehaviour {
     _gameSession.BeginLevel();
 
     foreach (Collectible collectible in _collectibles) {
-      collectible.Collected +=
-          OnCollectibleCollected;
+      collectible.Collected += OnCollectibleCollected;
     }
 
     foreach (MovingHazard hazard in _hazards) {
@@ -89,30 +80,21 @@ public sealed class GameManager: MonoBehaviour {
     }
   }
 
-  private void OnPlayerHit(
-      MovingHazard hazard,
-      PlayerController hitPlayer) {
-    if (_gameFinished ||
-        hitPlayer.IsInvulnerable) {
+  private void OnPlayerHit(MovingHazard hazard,PlayerController hitPlayer) {
+    if (_gameFinished || hitPlayer.IsInvulnerable) {
       return;
     }
 
-    bool hasRemainingLives =
-        _gameSession.TryLoseLife();
-
+    bool hasRemainingLives = _gameSession.TryLoseLife();
     PublishLives();
-
-    Debug.Log(
-        $"Danger touché. Vies restantes : {_gameSession.RemainingLives}",
-        hazard);
+    Debug.Log($"Danger touché. Vies restantes : {_gameSession.RemainingLives}",hazard);
 
     if (!hasRemainingLives) {
       FinishGame(GameResult.NoLives);
       return;
     }
 
-    hitPlayer.Respawn(
-        invulnerabilityDuration);
+    hitPlayer.Respawn(invulnerabilityDuration);
   }
 
   private void Start() {
@@ -122,18 +104,16 @@ public sealed class GameManager: MonoBehaviour {
   }
 
   private void PublishLives() {
-    LivesChanged?.Invoke(
-        _gameSession.RemainingLives,
-        _gameSession.StartingLives);
+    LivesChanged?.Invoke(_gameSession.RemainingLives,_gameSession.StartingLives);
   }
 
   private void Update() {
     if (Keyboard.current?.escapeKey.wasPressedThisFrame == true) {
-      Application.Quit();
+      TogglePause();
       return;
     }
 
-    if (_gameFinished) {
+    if (_gameFinished || _isPaused) {
       return;
     }
 
@@ -151,6 +131,32 @@ public sealed class GameManager: MonoBehaviour {
     PublishTimer();
   }
 
+  public void TogglePause() {
+    if (_gameFinished) {
+      return;
+    }
+
+    SetPaused(!_isPaused);
+  }
+
+  public void ResumeGame() {
+    SetPaused(false);
+  }
+
+  private void SetPaused(bool isPaused) {
+    if (_gameFinished || _isPaused == isPaused) {
+      return;
+    }
+
+    _isPaused = isPaused;
+
+    Time.timeScale = _isPaused
+        ? 0f
+        : 1f;
+
+    PauseChanged?.Invoke(_isPaused);
+  }
+
   private void OnCollectibleCollected(
       Collectible collectible) {
     if (_gameFinished) {
@@ -158,9 +164,7 @@ public sealed class GameManager: MonoBehaviour {
     }
 
     _collectedCount++;
-    _gameSession.AddScore(
-        collectible.PointValue);
-
+    _gameSession.AddScore(collectible.PointValue);
     PublishScore();
 
     if (_collectedCount >= _totalCollectibles) {
@@ -179,23 +183,19 @@ public sealed class GameManager: MonoBehaviour {
     }
     _gameFinished = true;
     Debug.Log($"Chargement du niveau suivant, index {nextSceneBuildIndex}.");
+    SetPaused(false);
     SceneManager.LoadScene(nextSceneBuildIndex);
     return true;
   }
 
   private void PublishScore() {
-    ScoreChanged?.Invoke(
-        _collectedCount,
-        _totalCollectibles,
-        _gameSession.Score);
+    ScoreChanged?.Invoke(_collectedCount,_totalCollectibles,_gameSession.Score);
   }
 
   private void PublishTimer(bool force = false) {
-    int displayedSecond =
-        Mathf.CeilToInt(_remainingTime);
+    int displayedSecond = Mathf.CeilToInt(_remainingTime);
 
-    if (!force &&
-        displayedSecond == _lastPublishedSecond) {
+    if (!force && displayedSecond == _lastPublishedSecond) {
       return;
     }
 
@@ -235,7 +235,9 @@ public sealed class GameManager: MonoBehaviour {
     ReplayCurrentScene();
   }
 
-  private void ReturnToMainMenu() {
+  public void ReturnToMainMenu() {
+    SetPaused(false);
+
     if (mainMenuBuildIndex >=
         SceneManager.sceneCountInBuildSettings) {
       Debug.LogError(
@@ -251,6 +253,8 @@ public sealed class GameManager: MonoBehaviour {
   }
 
   public void ReplayCurrentScene() {
+    SetPaused(false);
+
     _gameSession.RestoreLevelCheckpoint();
 
     Scene currentScene =
@@ -264,35 +268,30 @@ public sealed class GameManager: MonoBehaviour {
     bool isValid = true;
 
     if (playerController == null) {
-      Debug.LogError(
-          "La référence PlayerController n'est pas renseignée.",
-          this);
-
+      Debug.LogError("La référence PlayerController n'est pas renseignée.",this);
       isValid = false;
     }
 
     if (_gameSession == null) {
-      Debug.LogError(
-          "Aucune GameSession active n'a été trouvée.",
-          this);
-
+      Debug.LogError("Aucune GameSession active n'a été trouvée.",this);
       isValid = false;
     }
 
     if (_totalCollectibles == 0) {
-      Debug.LogWarning(
-          "Aucun Collectible actif n'a été trouvé dans la scène.",
-          this);
+      Debug.LogWarning("Aucun Collectible actif n'a été trouvé dans la scène.",this);
     }
 
     return isValid;
   }
 
   private void OnDestroy() {
+    if (_isPaused) {
+      Time.timeScale = 1f;
+    }
+
     foreach (Collectible collectible in _collectibles) {
       if (collectible != null) {
-        collectible.Collected -=
-            OnCollectibleCollected;
+        collectible.Collected -= OnCollectibleCollected;
       }
     }
 

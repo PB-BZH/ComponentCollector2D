@@ -20,10 +20,7 @@ public sealed class Collectible: MonoBehaviour {
   private bool _isCollected;
 
   private void Update() {
-    transform.Rotate(
-        xAngle: 0f,
-        yAngle: 0f,
-        zAngle: rotationSpeed * Time.deltaTime);
+    transform.Rotate(xAngle: 0f,yAngle: 0f,zAngle: rotationSpeed * Time.deltaTime);
   }
 
   private void Reset() {
@@ -32,8 +29,7 @@ public sealed class Collectible: MonoBehaviour {
   }
 
   private void OnTriggerEnter2D(Collider2D other) {
-    if (_isCollected ||
-        !other.TryGetComponent<PlayerController>(out _)) {
+    if (_isCollected || !other.TryGetComponent<PlayerController>(out _)) {
       return;
     }
 

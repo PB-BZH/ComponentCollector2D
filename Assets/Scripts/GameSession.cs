@@ -54,9 +54,7 @@ public sealed class GameSession: MonoBehaviour {
   }
 
   public bool TryLoseLife() {
-    RemainingLives =
-        Mathf.Max(0,RemainingLives - 1);
-
+    RemainingLives = Mathf.Max(0,RemainingLives - 1);
     return RemainingLives > 0;
   }
 

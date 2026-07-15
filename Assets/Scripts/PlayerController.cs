@@ -38,10 +38,7 @@ public sealed class PlayerController: MonoBehaviour {
 
   private void OnEnable() {
     if (moveAction == null || moveAction.action == null) {
-      Debug.LogError(
-          "L'action de déplacement Move n'est pas renseignée.",
-          this);
-
+      Debug.LogError("L'action de déplacement Move n'est pas renseignée.",this);
       enabled = false;
       return;
     }
@@ -50,16 +47,12 @@ public sealed class PlayerController: MonoBehaviour {
   }
 
   private void Update() {
-    Vector2 input =
-        moveAction.action.ReadValue<Vector2>();
-
-    _movementInput =
-        Vector2.ClampMagnitude(input,1f);
+    Vector2 input = moveAction.action.ReadValue<Vector2>();
+    _movementInput = Vector2.ClampMagnitude(input,1f);
   }
 
   private void FixedUpdate() {
-    _rigidbody.linearVelocity =
-        _movementInput * speed;
+    _rigidbody.linearVelocity = _movementInput * speed;
   }
 
   public void Respawn(float invulnerabilityDuration) {
@@ -73,10 +66,7 @@ public sealed class PlayerController: MonoBehaviour {
     // Téléportation vers la position initiale.
     _rigidbody.position = _spawnPosition;
 
-    _invulnerabilityCoroutine =
-        StartCoroutine(
-            InvulnerabilityRoutine(
-                invulnerabilityDuration));
+    _invulnerabilityCoroutine = StartCoroutine(InvulnerabilityRoutine(invulnerabilityDuration));
   }
 
   private IEnumerator InvulnerabilityRoutine(
@@ -86,12 +76,8 @@ public sealed class PlayerController: MonoBehaviour {
     float elapsedTime = 0f;
 
     while (elapsedTime < duration) {
-      _spriteRenderer.enabled =
-          !_spriteRenderer.enabled;
-
-      yield return new WaitForSeconds(
-          blinkInterval);
-
+      _spriteRenderer.enabled = !_spriteRenderer.enabled;
+      yield return new WaitForSeconds(blinkInterval);
       elapsedTime += blinkInterval;
     }
 
@@ -101,15 +87,12 @@ public sealed class PlayerController: MonoBehaviour {
   }
 
   private void OnDisable() {
-    if (moveAction != null &&
-        moveAction.action != null) {
+    if (moveAction != null && moveAction.action != null) {
       moveAction.action.Disable();
     }
 
     if (_invulnerabilityCoroutine != null) {
-      StopCoroutine(
-          _invulnerabilityCoroutine);
-
+      StopCoroutine(_invulnerabilityCoroutine);
       _invulnerabilityCoroutine = null;
     }
 
@@ -119,8 +102,7 @@ public sealed class PlayerController: MonoBehaviour {
     _movementInput = Vector2.zero;
 
     if (_rigidbody != null) {
-      _rigidbody.linearVelocity =
-          Vector2.zero;
+      _rigidbody.linearVelocity = Vector2.zero;
     }
   }
 }
