@@ -26,6 +26,9 @@ public sealed class GameUI: MonoBehaviour {
   private TMP_Text scoreText;
 
   [SerializeField]
+  private TMP_Text collectedText;
+
+  [SerializeField]
   private TMP_Text timerText;
 
   [SerializeField]
@@ -149,7 +152,8 @@ public sealed class GameUI: MonoBehaviour {
   }
 
   private void OnScoreChanged(int collectedCount,int totalCollectibles,int score) {
-    scoreText.text = $"Composants : {collectedCount} / {totalCollectibles}   Score : {score}";
+    collectedText.text = $"Composants : {collectedCount} / {totalCollectibles}";
+    scoreText.text = $"Score : {score}";
   }
 
   private void OnTimerChanged(int remainingSeconds) {
