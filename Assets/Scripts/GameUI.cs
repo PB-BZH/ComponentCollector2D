@@ -34,6 +34,9 @@ public sealed class GameUI: MonoBehaviour {
   [SerializeField]
   private TMP_Text livesText;
 
+  [SerializeField]
+  private TMP_Text levelText;
+
   [Header("Écran de fin")]
   [SerializeField]
   private GameObject endPanel;
@@ -80,6 +83,8 @@ public sealed class GameUI: MonoBehaviour {
       enabled = false;
       return;
     }
+
+    levelText.text = $"Niveau : {_gameManager.LevelNumber}";
 
     endPanel.SetActive(false);
     pausePanel.SetActive(false);

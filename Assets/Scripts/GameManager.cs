@@ -4,6 +4,11 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public sealed class GameManager: MonoBehaviour {
+  [Header("Niveau")]
+  [SerializeField]
+  [Min(1)]
+  private int levelNumber = 1;
+
   [Header("Navigation")]
   [SerializeField]
   [Min(0)]
@@ -32,6 +37,7 @@ public sealed class GameManager: MonoBehaviour {
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
+  public int LevelNumber => levelNumber;
 
   private int _collectedCount;
   private int _totalCollectibles;
