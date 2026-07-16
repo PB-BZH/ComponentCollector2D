@@ -74,6 +74,20 @@ public sealed class GameUI: MonoBehaviour {
   private GameManager _gameManager;
   private Coroutine _timerBlinkCoroutine;
 
+  [Header("Couleurs de fin de partie")]
+
+  [SerializeField]
+  private Color victoryMessageColor = Color.green;
+
+  [SerializeField]
+  private Color timeExpiredMessageColor = new Color(1f,0.5f,0f,1f);
+
+  [SerializeField]
+  private Color noLivesMessageColor = Color.red;
+
+  [SerializeField]
+  private Color defaultMessageColor = Color.white;
+
   private void OnValidate() {
     if (scoreText == null ||
         timerText == null ||
@@ -225,25 +239,25 @@ public sealed class GameUI: MonoBehaviour {
     switch (result) {
       case GameResult.Victory:
         endMessageText.text = "Mission accomplie !";
-        endMessageText.color = Color.green;
+        endMessageText.color = victoryMessageColor;
         endActionButtonText.text = "Menu principal";
         break;
 
       case GameResult.TimeExpired:
         endMessageText.text = "Temps écoulé !";
-        endMessageText.color = new Color(1f,0.5f,0f);
+        endMessageText.color = timeExpiredMessageColor;
         endActionButtonText.text = "Rejouer";
         break;
 
       case GameResult.NoLives:
         endMessageText.text = "Plus de vies !";
-        endMessageText.color = Color.red;
+        endMessageText.color = noLivesMessageColor;
         endActionButtonText.text = "Rejouer";
         break;
 
       default:
         endMessageText.text = "Partie terminée";
-        endMessageText.color = Color.white;
+        endMessageText.color = defaultMessageColor;
         endActionButtonText.text = "Rejouer";
         break;
     }
