@@ -770,7 +770,7 @@ PrefabInstance:
     - target: {fileID: 2841651838155600541, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
       propertyPath: noLivesClip
       value: 
-      objectReference: {fileID: 8300000, guid: 48cc72dfa0ad0b046af94b720cece6a5, type: 3}
+      objectReference: {fileID: 8300000, guid: 58903cb1dbede7049a2438ed43c11df1, type: 3}
     - target: {fileID: 2841651838155600541, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
       propertyPath: countdownClip
       value: 
@@ -778,7 +778,7 @@ PrefabInstance:
     - target: {fileID: 2841651838155600541, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
       propertyPath: timeExpiredClip
       value: 
-      objectReference: {fileID: 8300000, guid: 5bbd0116e473a75428d3f21df6f7ef10, type: 3}
+      objectReference: {fileID: 8300000, guid: 664d19b5e6abf7c4ca15bed1f2150a33, type: 3}
     - target: {fileID: 2841651838155600541, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
       propertyPath: finalCountdownClip
       value: 

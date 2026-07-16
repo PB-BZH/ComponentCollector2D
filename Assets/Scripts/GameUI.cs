@@ -225,21 +225,25 @@ public sealed class GameUI: MonoBehaviour {
     switch (result) {
       case GameResult.Victory:
         endMessageText.text = "Mission accomplie !";
+        endMessageText.color = Color.green;
         endActionButtonText.text = "Menu principal";
         break;
 
       case GameResult.TimeExpired:
         endMessageText.text = "Temps écoulé !";
+        endMessageText.color = new Color(1f,0.5f,0f);
         endActionButtonText.text = "Rejouer";
         break;
 
       case GameResult.NoLives:
         endMessageText.text = "Plus de vies !";
+        endMessageText.color = Color.red;
         endActionButtonText.text = "Rejouer";
         break;
 
       default:
         endMessageText.text = "Partie terminée";
+        endMessageText.color = Color.white;
         endActionButtonText.text = "Rejouer";
         break;
     }
