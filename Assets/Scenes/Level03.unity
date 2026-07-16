@@ -767,6 +767,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2841651838155600541, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
+      propertyPath: countdownClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 714ffc7da39e6bd489b6b20e9ee2e339, type: 3}
     - target: {fileID: 3391619429000991035, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 481
