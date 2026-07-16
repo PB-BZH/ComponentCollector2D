@@ -14,6 +14,15 @@ public sealed class GameAudio: MonoBehaviour {
   [SerializeField]
   private AudioClip victoryClip;
 
+  [Header("Compte à rebours")]
+  [SerializeField]
+  [Min(1)]
+  private int countdownStartSecond = 10;
+
+  [SerializeField]
+  private AudioClip countdownClip;
+  private int _lastCountdownSecond = -1;
+
   [Header("Volumes")]
   [SerializeField]
   [Range(0f,1f)]
@@ -87,6 +96,8 @@ public sealed class GameAudio: MonoBehaviour {
     _gameManager.PointsGained += OnPointsGained;
     _gameManager.LifeLost += OnLifeLost;
     _gameManager.GameFinished += OnGameFinished;
+    _gameManager.TimerChanged += OnTimerChanged;
+    _lastCountdownSecond = -1;
   }
 
   private void DetachFromGameManager() {
@@ -94,9 +105,31 @@ public sealed class GameAudio: MonoBehaviour {
       _gameManager.PointsGained -= OnPointsGained;
       _gameManager.LifeLost -= OnLifeLost;
       _gameManager.GameFinished -= OnGameFinished;
+      _gameManager.TimerChanged -= OnTimerChanged;
+      _lastCountdownSecond = -1;
     }
 
     _gameManager = null;
+  }
+
+  private void OnTimerChanged(int remainingSeconds) {
+    if (remainingSeconds <= 0 ||
+        remainingSeconds > countdownStartSecond) {
+      return;
+    }
+
+    if (remainingSeconds == _lastCountdownSecond) {
+      return;
+    }
+
+    _lastCountdownSecond = remainingSeconds;
+
+    if (countdownClip == null) {
+      Debug.LogWarning("GameAudio : le son du compte à rebours n'est pas renseigné.",this);
+      return;
+    }
+
+    _audioSource.PlayOneShot(countdownClip);
   }
 
   private void OnPointsGained(int pointValue) {
