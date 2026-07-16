@@ -14,6 +14,12 @@ public sealed class GameAudio: MonoBehaviour {
   [SerializeField]
   private AudioClip victoryClip;
 
+  [SerializeField]
+  private AudioClip timeExpiredClip;
+
+  [SerializeField]
+  private AudioClip noLivesClip;
+
   [Header("Compte à rebours")]
   [SerializeField]
   [Min(1)]
@@ -23,10 +29,25 @@ public sealed class GameAudio: MonoBehaviour {
   private AudioClip countdownClip;
   private int _lastCountdownSecond = -1;
 
+  [SerializeField]
+  private AudioClip finalCountdownClip;
+
+  [SerializeField]
+  [Min(1)]
+  private int finalCountdownStartSecond = 3;
+
   [Header("Volumes")]
   [SerializeField]
   [Range(0f,1f)]
   private float collectVolume = 0.7f;
+
+  [SerializeField]
+  [Range(0f,1f)]
+  private float timeExpiredVolume = 1f;
+
+  [SerializeField]
+  [Range(0f,1f)]
+  private float noLivesVolume = 1f;
 
   [SerializeField]
   [Range(0f,1f)]
@@ -124,12 +145,20 @@ public sealed class GameAudio: MonoBehaviour {
 
     _lastCountdownSecond = remainingSeconds;
 
-    if (countdownClip == null) {
-      Debug.LogWarning("GameAudio : le son du compte à rebours n'est pas renseigné.",this);
+    AudioClip clipToPlay =
+      remainingSeconds <= finalCountdownStartSecond && finalCountdownClip != null
+        ? finalCountdownClip
+        : countdownClip;
+
+    if (clipToPlay == null) {
+      Debug.LogWarning(
+          "GameAudio : aucun son de compte à rebours n'est renseigné.",
+          this);
+
       return;
     }
 
-    _audioSource.PlayOneShot(countdownClip);
+    _audioSource.PlayOneShot(clipToPlay);
   }
 
   private void OnPointsGained(int pointValue) {
@@ -149,12 +178,19 @@ public sealed class GameAudio: MonoBehaviour {
         damageVolume);
   }
 
-  private void OnGameFinished(
-      GameResult result) {
-    if (result == GameResult.Victory) {
-      PlayClip(
-          victoryClip,
-          victoryVolume);
+  private void OnGameFinished(GameResult result) {
+    switch (result) {
+      case GameResult.Victory:
+        PlayClip(victoryClip,victoryVolume);
+        break;
+
+      case GameResult.TimeExpired:
+        PlayClip(timeExpiredClip,timeExpiredVolume);
+        break;
+
+      case GameResult.NoLives:
+        PlayClip(noLivesClip,noLivesVolume);
+        break;
     }
   }
 
