@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public sealed class MainMenuController: MonoBehaviour {
+  [SerializeField]
+  private TMP_Text bestScoreText;
+
   [Header("Boutons")]
   [SerializeField]
   private Button newGameButton;
@@ -28,6 +32,20 @@ public sealed class MainMenuController: MonoBehaviour {
     if (!ValidateReferences()) {
       enabled = false;
     }
+  }
+
+  private void Start() {
+    if (bestScoreText == null) {
+      Debug.LogWarning("MainMenuController : BestScoreText n'est pas renseigné.",this);
+      return;
+    }
+
+    if (GameSession.Instance == null) {
+      Debug.LogWarning("MainMenuController : aucune GameSession disponible.",this);
+      return;
+    }
+
+    bestScoreText.text = $"Meilleur score : {GameSession.Instance.BestScore}";
   }
 
   private void OnEnable() {

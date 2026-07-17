@@ -9,13 +9,11 @@ public sealed class GameSession: MonoBehaviour {
   [SerializeField]
   [Min(1)]
   private int startingLives = 3;
-
   public int StartingLives => startingLives;
-
+  private const string BestScoreKey = "BestScore";
+  public int BestScore { get; private set; }
   public int RemainingLives { get; private set; }
-
   public int Score { get; private set; }
-
   private int _levelStartScore;
   private int _levelStartLives;
 
@@ -30,6 +28,8 @@ public sealed class GameSession: MonoBehaviour {
       Destroy(gameObject);
       return;
     }
+
+    BestScore = PlayerPrefs.GetInt(BestScoreKey,0);
 
     Instance = this;
 
@@ -51,6 +51,15 @@ public sealed class GameSession: MonoBehaviour {
 
   public void AddScore(int points) {
     Score += Mathf.Max(0,points);
+    if (Score > BestScore) {
+      BestScore = Score;
+
+      PlayerPrefs.SetInt(
+          BestScoreKey,
+          BestScore);
+
+      PlayerPrefs.Save();
+    }
   }
 
   public bool TryLoseLife() {
