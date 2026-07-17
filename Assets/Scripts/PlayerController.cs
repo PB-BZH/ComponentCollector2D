@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(SpriteRenderer))]
 public sealed class PlayerController: MonoBehaviour {
   [Header("Déplacement")]
   [SerializeField]
@@ -31,7 +30,7 @@ public sealed class PlayerController: MonoBehaviour {
 
   private void Awake() {
     _rigidbody = GetComponent<Rigidbody2D>();
-    _spriteRenderer = GetComponent<SpriteRenderer>();
+    _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
     _spawnPosition = _rigidbody.position;
   }
