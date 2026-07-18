@@ -3027,6 +3027,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b00da1065dc4a149b220b9f4ce3477c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  levelConfig: {fileID: 11400000, guid: 5bb9ea12c9902414bb2695cb88a52603, type: 2}
   levelNumber: 4
   mainMenuBuildIndex: 0
   invulnerabilityDuration: 1.5

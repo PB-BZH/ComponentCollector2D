@@ -1706,10 +1706,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b00da1065dc4a149b220b9f4ce3477c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  levelNumber: 3
+  levelConfig: {fileID: 11400000, guid: baf1d1717ec1eb94da75fb09cb38a792, type: 2}
+  levelNumber: 1
   mainMenuBuildIndex: 0
   invulnerabilityDuration: 1.5
-  gameDuration: 30
+  gameDuration: 1
   playerController: {fileID: 1715442372}
 --- !u!114 &1715442372 stripped
 MonoBehaviour:

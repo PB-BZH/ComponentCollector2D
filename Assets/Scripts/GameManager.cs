@@ -4,10 +4,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public sealed class GameManager: MonoBehaviour {
-  [Header("Niveau")]
+  [Header("Configuration du niveau")]
   [SerializeField]
-  [Min(1)]
-  private int levelNumber = 1;
+  private LevelConfig levelConfig;
 
   [Header("Navigation")]
   [SerializeField]
@@ -17,11 +16,6 @@ public sealed class GameManager: MonoBehaviour {
   [SerializeField]
   [Min(0f)]
   private float invulnerabilityDuration = 1.5f;
-
-  [Header("Partie")]
-  [SerializeField]
-  [Min(1f)]
-  private float gameDuration = 45f;
 
   [SerializeField]
   private PlayerController playerController;
@@ -37,8 +31,8 @@ public sealed class GameManager: MonoBehaviour {
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
-  public int LevelNumber => levelNumber;
-
+  public int LevelNumber => levelConfig.LevelNumber;
+  private float LevelDuration => levelConfig.GameDuration;
   private int _collectedCount;
   private int _totalCollectibles;
   private GameSession _gameSession;
@@ -55,7 +49,6 @@ public sealed class GameManager: MonoBehaviour {
 
   private void OnValidate() {
     mainMenuBuildIndex = Mathf.Max(0,mainMenuBuildIndex);
-    gameDuration = Mathf.Max(1f,gameDuration);
     invulnerabilityDuration = Mathf.Max(0f,invulnerabilityDuration);
 
     if (playerController == null) {
@@ -70,7 +63,7 @@ public sealed class GameManager: MonoBehaviour {
     _collectibles = FindObjectsByType<Collectible>(FindObjectsInactive.Exclude);
     _hazards = FindObjectsByType<MovingHazard>(FindObjectsInactive.Exclude);
     _totalCollectibles = _collectibles.Length;
-    _remainingTime = gameDuration;
+    _remainingTime = LevelDuration;
 
     if (!ValidateReferences()) {
       enabled = false;
@@ -293,6 +286,10 @@ public sealed class GameManager: MonoBehaviour {
       Debug.LogWarning("Aucun Collectible actif n'a été trouvé dans la scène.",this);
     }
 
+    if (levelConfig == null) {
+      Debug.LogError("GameManager : aucun LevelConfig n'est renseigné.",this);
+      return false;
+    }
     return isValid;
   }
 
