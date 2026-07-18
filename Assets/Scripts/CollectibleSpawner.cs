@@ -7,6 +7,13 @@ public sealed class CollectibleSpawner: MonoBehaviour {
   [SerializeField]
   private Collectible collectiblePrefab;
 
+  [SerializeField]
+  private Collectible rareCollectiblePrefab;
+
+  [SerializeField]
+  [Range(0f,1f)]
+  private float rareSpawnChance = 0.25f;
+
   [Header("Points d'apparition")]
   [SerializeField]
   private Transform[] spawnPoints;
@@ -22,7 +29,13 @@ public sealed class CollectibleSpawner: MonoBehaviour {
       if (spawnPoint == null) {
         continue;
       }
-      Instantiate(collectiblePrefab,spawnPoint.position,spawnPoint.rotation,transform);
+      Collectible prefabToSpawn = collectiblePrefab;
+
+      if (rareCollectiblePrefab != null &&
+          Random.value < rareSpawnChance) {
+        prefabToSpawn = rareCollectiblePrefab;
+      }
+      Instantiate(prefabToSpawn,spawnPoint.position,spawnPoint.rotation,transform);
     }
   }
 }

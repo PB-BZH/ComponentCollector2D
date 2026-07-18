@@ -2942,6 +2942,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleSpawner
   collectiblePrefab: {fileID: 1629682494473554856, guid: 1b738efde6b7f15439130229e0697a5c, type: 3}
+  rareCollectiblePrefab: {fileID: 8334688988480152322, guid: 766e17fa88418e24591224d658c458b9, type: 3}
+  rareSpawnChance: 0.25
   spawnPoints:
   - {fileID: 1313023459}
   - {fileID: 2040686861}
