@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8294424611175007885}
   - component: {fileID: 990593753466092017}
   - component: {fileID: 1629682494473554856}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Collectible
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -142,3 +142,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18245b8a16b9fc544bff280940251d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Collectible
+  pointValue: 1
+  rotationSpeed: 90

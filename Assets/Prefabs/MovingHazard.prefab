@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6678797730966520262}
   - component: {fileID: 2253066925284660118}
   - component: {fileID: 5373501630474585126}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: MovingHazard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
