@@ -38,4 +38,17 @@ public sealed class CollectibleSpawner: MonoBehaviour {
       Instantiate(prefabToSpawn,spawnPoint.position,spawnPoint.rotation,transform);
     }
   }
+
+  private void OnDrawGizmos() {
+    if (spawnPoints == null) {
+      return;
+    }
+    Gizmos.color = Color.yellow;
+    foreach (Transform spawnPoint in spawnPoints) {
+      if (spawnPoint == null) {
+        continue;
+      }
+      Gizmos.DrawWireSphere(spawnPoint.position,0.25f);
+    }
+  }
 }
