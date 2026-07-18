@@ -20,6 +20,7 @@ public sealed class PlayerController: MonoBehaviour {
 
   private Rigidbody2D _rigidbody;
   private SpriteRenderer _spriteRenderer;
+  private Animator _animator;
 
   private Vector2 _movementInput;
   private Vector2 _spawnPosition;
@@ -31,6 +32,7 @@ public sealed class PlayerController: MonoBehaviour {
   private void Awake() {
     _rigidbody = GetComponent<Rigidbody2D>();
     _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+    _animator = GetComponentInChildren<Animator>();
 
     _spawnPosition = _rigidbody.position;
   }
@@ -48,6 +50,9 @@ public sealed class PlayerController: MonoBehaviour {
   private void Update() {
     Vector2 input = moveAction.action.ReadValue<Vector2>();
     _movementInput = Vector2.ClampMagnitude(input,1f);
+
+    bool isMoving = _movementInput.sqrMagnitude > 0.01f;
+    _animator.SetBool("IsMoving",isMoving);
   }
 
   private void FixedUpdate() {
