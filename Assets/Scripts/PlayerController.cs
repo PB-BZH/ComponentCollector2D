@@ -13,6 +13,20 @@ public sealed class PlayerController: MonoBehaviour {
   [SerializeField]
   private InputActionReference moveAction;
 
+  [Header("Tir")]
+  [SerializeField]
+  private InputActionReference fireAction;
+
+  [SerializeField]
+  private PlayerProjectile projectilePrefab;
+
+  [SerializeField]
+  private Transform firePoint;
+
+  [SerializeField]
+  [Min(0f)]
+  private float firePointDistance = 0.65f;
+
   [Header("Invulnérabilité")]
   [SerializeField]
   [Min(0.05f)]
@@ -24,6 +38,7 @@ public sealed class PlayerController: MonoBehaviour {
 
   private Vector2 _movementInput;
   private Vector2 _spawnPosition;
+  private Vector2 _lastMoveDirection = Vector2.right;
 
   private Coroutine _invulnerabilityCoroutine;
 
@@ -38,18 +53,34 @@ public sealed class PlayerController: MonoBehaviour {
   }
 
   private void OnEnable() {
-    if (moveAction == null || moveAction.action == null) {
+    if (moveAction == null ||
+        moveAction.action == null) {
       Debug.LogError("L'action de déplacement Move n'est pas renseignée.",this);
       enabled = false;
       return;
     }
 
+    if (fireAction == null ||
+        fireAction.action == null) {
+      Debug.LogError("L'action de tir Fire n'est pas renseignée.",this);
+      enabled = false;
+      return;
+    }
+
+    fireAction.action.performed += OnFirePerformed;
+
     moveAction.action.Enable();
+    fireAction.action.Enable();
   }
 
   private void Update() {
     Vector2 input = moveAction.action.ReadValue<Vector2>();
+
     _movementInput = Vector2.ClampMagnitude(input,1f);
+
+    if (_movementInput.sqrMagnitude > 0.01f) {
+      _lastMoveDirection = _movementInput.normalized;
+    }
 
     bool isMoving = _movementInput.sqrMagnitude > 0.01f;
     _animator.SetBool("IsMoving",isMoving);
@@ -65,6 +96,12 @@ public sealed class PlayerController: MonoBehaviour {
     }
 
     _movementInput = Vector2.zero;
+
+    if (_movementInput.sqrMagnitude > 0.01f) {
+      _lastMoveDirection =
+          _movementInput.normalized;
+    }
+
     _rigidbody.linearVelocity = Vector2.zero;
 
     // Téléportation vers la position initiale.
@@ -91,7 +128,14 @@ public sealed class PlayerController: MonoBehaviour {
   }
 
   private void OnDisable() {
-    if (moveAction != null && moveAction.action != null) {
+    if (fireAction != null &&
+        fireAction.action != null) {
+      fireAction.action.performed -= OnFirePerformed;
+      fireAction.action.Disable();
+    }
+
+    if (moveAction != null &&
+        moveAction.action != null) {
       moveAction.action.Disable();
     }
 
@@ -108,5 +152,40 @@ public sealed class PlayerController: MonoBehaviour {
     if (_rigidbody != null) {
       _rigidbody.linearVelocity = Vector2.zero;
     }
+  }
+
+  private void OnFirePerformed(
+      InputAction.CallbackContext context) {
+    if (projectilePrefab == null) {
+      Debug.LogWarning("PlayerController : le prefab du projectile n'est pas renseigné.",this);
+      return;
+    }
+
+    if (firePoint == null) {
+      Debug.LogWarning("PlayerController : le point de tir n'est pas renseigné.",this);
+      return;
+    }
+
+    Vector2 currentInput =
+    moveAction.action.ReadValue<Vector2>();
+
+    Vector2 fireDirection =
+        currentInput.sqrMagnitude > 0.01f
+            ? currentInput.normalized
+            : _lastMoveDirection;
+
+    firePoint.localPosition =
+    new Vector3(
+        fireDirection.x,
+        fireDirection.y,
+        0f)
+    * firePointDistance;
+
+    PlayerProjectile projectile = Instantiate(
+        projectilePrefab,
+        firePoint.position,
+        Quaternion.identity);
+
+    projectile.Initialize(fireDirection);
   }
 }
