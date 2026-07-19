@@ -181,4 +181,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingHazard
   speed: 4
+  obstacleDetectionDistance: 0.5
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 64
   travelOffset: {x: 8, y: 0}

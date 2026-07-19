@@ -10,6 +10,14 @@ public sealed class MovingHazard: MonoBehaviour {
   [Min(0f)]
   private float speed = 2f;
 
+  [Header("Détection des obstacles")]
+  [SerializeField]
+  [Min(0.01f)]
+  private float obstacleDetectionDistance = 0.5f;
+
+  [SerializeField]
+  private LayerMask obstacleLayers;
+
   [SerializeField]
   private Vector2 travelOffset = new(8f,0f);
 
@@ -20,6 +28,7 @@ public sealed class MovingHazard: MonoBehaviour {
 
   private float _pathLength;
   private float _travelledDistance;
+  private bool _isMovingTowardEnd = true;
 
   private void Awake() {
     _rigidbody = GetComponent<Rigidbody2D>();
@@ -35,12 +44,49 @@ public sealed class MovingHazard: MonoBehaviour {
       return;
     }
 
-    _travelledDistance += speed * Time.fixedDeltaTime;
+    float directionSign = _isMovingTowardEnd ? 1f : -1f;
+    _travelledDistance += speed * Time.fixedDeltaTime * directionSign;
 
-    float distanceOnPath = Mathf.PingPong(_travelledDistance,_pathLength);
-    float progress = distanceOnPath / _pathLength;
+    if (_travelledDistance >= _pathLength) {
+      _travelledDistance = _pathLength;
+      _isMovingTowardEnd = false;
+    }
+    else if (_travelledDistance <= 0f) {
+      _travelledDistance = 0f;
+      _isMovingTowardEnd = true;
+    }
+
+    float progress = _travelledDistance / _pathLength;
 
     Vector2 targetPosition = Vector2.Lerp(_startPosition,_endPosition,progress);
+    Vector2 movementDirection = targetPosition - _rigidbody.position;
+
+    if (movementDirection.sqrMagnitude > 0.0001f) {
+
+      movementDirection.Normalize();
+
+      RaycastHit2D hit = Physics2D.Raycast(
+          _rigidbody.position,
+          movementDirection,
+          obstacleDetectionDistance,
+          obstacleLayers);
+
+      Color rayColor =
+          hit.collider != null
+              ? Color.red
+              : Color.yellow;
+
+      Debug.DrawRay(
+          _rigidbody.position,
+          movementDirection * obstacleDetectionDistance,
+          rayColor);
+
+      if (hit.collider != null) {
+        _isMovingTowardEnd = !_isMovingTowardEnd;
+        return;
+      }
+
+    }
 
     _rigidbody.MovePosition(targetPosition);
   }

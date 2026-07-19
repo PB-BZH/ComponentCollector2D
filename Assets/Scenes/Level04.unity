@@ -3246,11 +3246,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1745349959551937518, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4
+      value: -5.41
       objectReference: {fileID: 0}
     - target: {fileID: 1745349959551937518, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.5
+      value: 1.43
       objectReference: {fileID: 0}
     - target: {fileID: 1745349959551937518, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3291,6 +3291,14 @@ PrefabInstance:
     - target: {fileID: 5373501630474585126, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
       propertyPath: speed
       value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373501630474585126, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
+      propertyPath: travelOffset.x
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373501630474585126, guid: e93807a06cd3b8248aa539dc92b22711, type: 3}
+      propertyPath: obstacleDetectionDistance
+      value: 0.8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
