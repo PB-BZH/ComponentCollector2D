@@ -110,4 +110,8 @@ public sealed class MovingHazard: MonoBehaviour {
     Gizmos.DrawWireSphere(startPosition,0.15f);
     Gizmos.DrawWireSphere(endPosition,0.15f);
   }
+
+  public void ReceiveProjectileHit() {
+    Destroy(gameObject);
+  }
 }

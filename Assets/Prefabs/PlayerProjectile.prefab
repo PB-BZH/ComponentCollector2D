@@ -172,3 +172,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerProjectile
   speed: 10
   lifetime: 2
+  impactLayers:
+    serializedVersion: 2
+    m_Bits: 320

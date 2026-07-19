@@ -13,6 +13,10 @@ public sealed class PlayerProjectile: MonoBehaviour {
   [Min(0.1f)]
   private float lifetime = 2f;
 
+  [Header("Impacts")]
+  [SerializeField]
+  private LayerMask impactLayers;
+
   private Rigidbody2D _rigidbody;
 
   private void Awake() {
@@ -31,5 +35,23 @@ public sealed class PlayerProjectile: MonoBehaviour {
 
     _rigidbody.linearVelocity =
         normalizedDirection * speed;
+  }
+
+  private void OnTriggerEnter2D(Collider2D other) {
+    int otherLayerMask =
+        1 << other.gameObject.layer;
+
+    if ((impactLayers.value & otherLayerMask) == 0) {
+      return;
+    }
+
+    MovingHazard hazard =
+        other.GetComponentInParent<MovingHazard>();
+
+    if (hazard != null) {
+      hazard.ReceiveProjectileHit();
+    }
+
+    Destroy(gameObject);
   }
 }
