@@ -1795,6 +1795,10 @@ PrefabInstance:
       propertyPath: finalCountdownClip
       value: 
       objectReference: {fileID: 8300000, guid: 6c82b11ab0497cc4eacc7121b452b5d1, type: 3}
+    - target: {fileID: 2841651838155600541, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
+      propertyPath: hazardDestroyedClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 5bbd0116e473a75428d3f21df6f7ef10, type: 3}
     - target: {fileID: 3342352659701484474, guid: b4a25a3877bb60545927c11ff59ea6f2, type: 3}
       propertyPath: MaxDistance
       value: 31.641663

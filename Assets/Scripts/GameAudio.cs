@@ -12,6 +12,9 @@ public sealed class GameAudio: MonoBehaviour {
   private AudioClip damageClip;
 
   [SerializeField]
+  private AudioClip hazardDestroyedClip;
+
+  [SerializeField]
   private AudioClip victoryClip;
 
   [SerializeField]
@@ -52,6 +55,10 @@ public sealed class GameAudio: MonoBehaviour {
   [SerializeField]
   [Range(0f,1f)]
   private float damageVolume = 0.8f;
+
+  [SerializeField]
+  [Range(0f,1f)]
+  private float hazardDestroyedVolume = 0.8f;
 
   [SerializeField]
   [Range(0f,1f)]
@@ -114,7 +121,8 @@ public sealed class GameAudio: MonoBehaviour {
       return;
     }
 
-    _gameManager.PointsGained += OnPointsGained;
+    _gameManager.CollectibleCollected += OnCollectibleCollected;
+    _gameManager.HazardDestroyed += OnHazardDestroyed;
     _gameManager.LifeLost += OnLifeLost;
     _gameManager.GameFinished += OnGameFinished;
     _gameManager.TimerChanged += OnTimerChanged;
@@ -123,7 +131,8 @@ public sealed class GameAudio: MonoBehaviour {
 
   private void DetachFromGameManager() {
     if (_gameManager != null) {
-      _gameManager.PointsGained -= OnPointsGained;
+      _gameManager.CollectibleCollected -= OnCollectibleCollected;
+      _gameManager.HazardDestroyed -= OnHazardDestroyed;
       _gameManager.LifeLost -= OnLifeLost;
       _gameManager.GameFinished -= OnGameFinished;
       _gameManager.TimerChanged -= OnTimerChanged;
@@ -161,14 +170,30 @@ public sealed class GameAudio: MonoBehaviour {
     _audioSource.PlayOneShot(clipToPlay);
   }
 
-  private void OnPointsGained(int pointValue) {
+  private void OnHazardDestroyed(
+    Vector3 position,
+    int points) {
+    PlayClip(
+        hazardDestroyedClip,
+        hazardDestroyedVolume);
+  }
+
+  private void OnCollectibleCollected(
+      Vector3 position,
+      int pointValue) {
     if (collectClip == null) {
       return;
     }
-    // Le rare possède une tonalité légèrement plus haute.
-    _audioSource.pitch = pointValue > 1 ? 1.2f : 1f;
 
-    _audioSource.PlayOneShot(collectClip,collectVolume);
+    // Le collectible rare possède
+    // une tonalité légèrement plus haute.
+    _audioSource.pitch =
+        pointValue > 1 ? 1.2f : 1f;
+
+    _audioSource.PlayOneShot(
+        collectClip,
+        collectVolume);
+
     _audioSource.pitch = 1f;
   }
 
