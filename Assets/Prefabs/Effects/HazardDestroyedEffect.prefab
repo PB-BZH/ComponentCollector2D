@@ -8,6 +8,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1041697759960256684, guid: 1f791add0e16e1e40a587f6e85425b4d, type: 3}
+      propertyPath: m_SortingLayer
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1041697759960256684, guid: 1f791add0e16e1e40a587f6e85425b4d, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 1459890723
+      objectReference: {fileID: 0}
     - target: {fileID: 4111280846766559362, guid: 1f791add0e16e1e40a587f6e85425b4d, type: 3}
       propertyPath: m_Name
       value: HazardDestroyedEffect

@@ -41,6 +41,24 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background
+    uniqueID: 3539039897
+    locked: 0
+  - name: Ground
+    uniqueID: 3844649855
+    locked: 0
+  - name: World
+    uniqueID: 3417968251
+    locked: 0
+  - name: YSorted
+    uniqueID: 4072063059
+    locked: 0
+  - name: Foreground
+    uniqueID: 2768311475
+    locked: 0
+  - name: Effects
+    uniqueID: 1459890723
+    locked: 0
   m_RenderingLayers:
   - Default
   - Light Layer 1
