@@ -10,6 +10,13 @@ public sealed class MovingHazard: MonoBehaviour {
   [Min(0f)]
   private float speed = 2f;
 
+  [Header("Récompense")]
+  [SerializeField]
+  [Min(0)]
+  private int destructionScore = 2;
+
+  public static event Action<int> DestroyedByProjectile;
+
   [Header("Détection des obstacles")]
   [SerializeField]
   [Min(0.01f)]
@@ -112,6 +119,8 @@ public sealed class MovingHazard: MonoBehaviour {
   }
 
   public void ReceiveProjectileHit() {
+    DestroyedByProjectile?.Invoke(destructionScore);
+
     Destroy(gameObject);
   }
 }

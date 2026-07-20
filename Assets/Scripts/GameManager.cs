@@ -74,6 +74,8 @@ public sealed class GameManager: MonoBehaviour {
     // au début de ce niveau.
     _gameSession.BeginLevel();
 
+    MovingHazard.DestroyedByProjectile += OnHazardDestroyedByProjectile;
+
     foreach (Collectible collectible in _collectibles) {
       collectible.Collected += OnCollectibleCollected;
     }
@@ -180,8 +182,19 @@ public sealed class GameManager: MonoBehaviour {
         FinishGame(GameResult.Victory);
       }
     }
+
   }
 
+  private void OnHazardDestroyedByProjectile(int points) {
+    if (_gameFinished || points <= 0) {
+      return;
+    }
+
+    _gameSession.AddScore(points);
+    PointsGained?.Invoke(points);
+
+    PublishScore();
+  }
   private bool TryLoadNextLevel() {
     Scene currentScene = SceneManager.GetActiveScene();
     int nextSceneBuildIndex = currentScene.buildIndex + 1;
@@ -294,6 +307,8 @@ public sealed class GameManager: MonoBehaviour {
   }
 
   private void OnDestroy() {
+    MovingHazard.DestroyedByProjectile -= OnHazardDestroyedByProjectile;
+
     if (_isPaused) {
       Time.timeScale = 1f;
     }
