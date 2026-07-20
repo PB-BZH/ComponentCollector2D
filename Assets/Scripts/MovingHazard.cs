@@ -15,7 +15,7 @@ public sealed class MovingHazard: MonoBehaviour {
   [Min(0)]
   private int destructionScore = 2;
 
-  public static event Action<int> DestroyedByProjectile;
+  public static event Action<Vector3,int> DestroyedByProjectile;
 
   [Header("Détection des obstacles")]
   [SerializeField]
@@ -119,8 +119,7 @@ public sealed class MovingHazard: MonoBehaviour {
   }
 
   public void ReceiveProjectileHit() {
-    DestroyedByProjectile?.Invoke(destructionScore);
-
+    DestroyedByProjectile?.Invoke(transform.position,destructionScore);
     Destroy(gameObject);
   }
 }

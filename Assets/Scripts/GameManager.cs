@@ -28,6 +28,7 @@ public sealed class GameManager: MonoBehaviour {
   public event Action LifeLost;
   public event Action<Vector3,int> CollectibleCollected;
   public event Action<Vector3> PlayerDamaged;
+  public event Action<Vector3,int> HazardDestroyed;
 
   private Collectible[] _collectibles = Array.Empty<Collectible>();
   private MovingHazard[] _hazards = Array.Empty<MovingHazard>();
@@ -185,16 +186,20 @@ public sealed class GameManager: MonoBehaviour {
 
   }
 
-  private void OnHazardDestroyedByProjectile(int points) {
+  private void OnHazardDestroyedByProjectile(
+      Vector3 position,
+      int points) {
     if (_gameFinished || points <= 0) {
       return;
     }
 
     _gameSession.AddScore(points);
     PointsGained?.Invoke(points);
+    HazardDestroyed?.Invoke(position,points);
 
     PublishScore();
   }
+
   private bool TryLoadNextLevel() {
     Scene currentScene = SceneManager.GetActiveScene();
     int nextSceneBuildIndex = currentScene.buildIndex + 1;

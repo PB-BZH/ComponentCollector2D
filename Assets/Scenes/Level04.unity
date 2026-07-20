@@ -171,6 +171,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameEffects
       objectReference: {fileID: 0}
+    - target: {fileID: 4911213684224860368, guid: 9cd891203348d8040933183a02a2c3e8, type: 3}
+      propertyPath: hazardDestroyedEffectPrefab
+      value: 
+      objectReference: {fileID: 9071670765798544307, guid: 1916e9c34d6f1c845a066a03df769bc5, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

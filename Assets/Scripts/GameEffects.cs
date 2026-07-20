@@ -9,6 +9,9 @@ public sealed class GameEffects: MonoBehaviour {
   [SerializeField]
   private ParticleSystem damageEffectPrefab;
 
+  [SerializeField]
+  private ParticleSystem hazardDestroyedEffectPrefab;
+
   private GameManager _gameManager;
 
   private void OnValidate() {
@@ -36,6 +39,7 @@ public sealed class GameEffects: MonoBehaviour {
     if (_gameManager != null) {
       _gameManager.CollectibleCollected += OnCollectibleCollected;
       _gameManager.PlayerDamaged += OnPlayerDamaged;
+      _gameManager.HazardDestroyed += OnHazardDestroyed;
     }
   }
 
@@ -43,7 +47,27 @@ public sealed class GameEffects: MonoBehaviour {
     if (_gameManager != null) {
       _gameManager.CollectibleCollected -= OnCollectibleCollected;
       _gameManager.PlayerDamaged -= OnPlayerDamaged;
+      _gameManager.HazardDestroyed -= OnHazardDestroyed;
     }
+  }
+
+  private void OnHazardDestroyed(
+    Vector3 position,
+    int points) {
+    if (hazardDestroyedEffectPrefab == null) {
+      Debug.LogWarning(
+          "GameEffects : le prefab de destruction de danger n'est pas renseigné.",
+          this);
+
+      return;
+    }
+
+    ParticleSystem effect = Instantiate(
+        hazardDestroyedEffectPrefab,
+        position,
+        Quaternion.identity);
+
+    effect.Play();
   }
 
   private void OnPlayerDamaged(Vector3 position) {
